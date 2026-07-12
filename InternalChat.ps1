@@ -534,7 +534,23 @@ function Get-ConversationMD5 {
 function Get-ChatFilePath {
     <#
     .SYNOPSIS
-        chats/{md5}_{yyyyMM}.json 경로를 반환한다.
+        chats/{md5}_{yyyyMM}.jsonl 경로를 반환한다. (메시지 append 로그)
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Md5,
+
+        [Parameter(Mandatory = $false)]
+        [string]$YearMonth = (Get-Date -Format 'yyyyMM')
+    )
+
+    return (Join-Path $script:ChatsDirectory ("{0}_{1}.jsonl" -f $Md5, $YearMonth))
+}
+
+function Get-ChatLegacyFilePath {
+    <#
+    .SYNOPSIS
+        구형 chats/{md5}_{yyyyMM}.json 경로 (마이그레이션용).
     #>
     param(
         [Parameter(Mandatory = $true)]
@@ -883,10 +899,266 @@ function Get-UserById {
 
 #region 채팅 메시지 파일
 
+function Get-ChatMessageIdCacheKey {
+    param(
+        [Parameter(Mandatory = $true)][string]$Md5,
+        [Parameter(Mandatory = $true)][string]$YearMonth
+    )
+    return ('{0}|{1}' -f $Md5, $YearMonth)
+}
+
+function Clear-ChatMessageIdIndex {
+    <#
+    .SYNOPSIS
+        메시지 ID 인덱스 캐시를 비운다. (전체 또는 특정 월)
+    #>
+    param(
+        [string]$Md5,
+        [string]$YearMonth
+    )
+    if ($null -eq $script:ChatMsgIdIndex) {
+        $script:ChatMsgIdIndex = @{}
+        return
+    }
+    if ($Md5 -and $YearMonth) {
+        $key = Get-ChatMessageIdCacheKey -Md5 $Md5 -YearMonth $YearMonth
+        if ($script:ChatMsgIdIndex.ContainsKey($key)) {
+            $script:ChatMsgIdIndex.Remove($key)
+        }
+        return
+    }
+    $script:ChatMsgIdIndex = @{}
+}
+
+function ConvertTo-ChatMessageJsonLine {
+    <#
+    .SYNOPSIS
+        메시지 객체를 JSONL 한 줄 문자열로 직렬화한다.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]$Message
+    )
+    return (($Message | ConvertTo-Json -Compress -Depth 8))
+}
+
+function Read-ChatMessagesJsonl {
+    <#
+    .SYNOPSIS
+        JSONL 파일을 읽어 메시지 배열로 반환한다. 깨진 줄은 건너뛴다.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+    if (-not (Test-Path -LiteralPath $Path)) { return @() }
+
+    $list = New-Object System.Collections.ArrayList
+    $reader = $null
+    try {
+        $reader = New-Object System.IO.StreamReader($Path, [System.Text.Encoding]::UTF8, $true)
+        while ($null -ne ($line = $reader.ReadLine())) {
+            if ([string]::IsNullOrWhiteSpace($line)) { continue }
+            try {
+                $obj = $line | ConvertFrom-Json
+                if ($null -ne $obj) { [void]$list.Add($obj) }
+            }
+            catch {
+                Write-AppLog -Level WARN -Message ("JSONL 줄 파싱 실패: " + $Path)
+            }
+        }
+    }
+    catch {
+        Write-AppLog -Level ERROR -Message ("JSONL 읽기 실패: " + $Path) -Exception $_.Exception
+        return @()
+    }
+    finally {
+        if ($reader) { $reader.Dispose() }
+    }
+    return @($list.ToArray())
+}
+
+function Write-ChatMessagesJsonl {
+    <#
+    .SYNOPSIS
+        메시지 배열 전체를 JSONL로 원자적 저장 (temp -> replace).
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [array]$Messages
+    )
+
+    $dir = Split-Path -Parent $Path
+    if ($dir -and -not (Test-Path -LiteralPath $dir)) {
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+    }
+
+    $tmp = $Path + '.tmp'
+    $utf8 = New-Object System.Text.UTF8Encoding $false
+    $writer = $null
+    try {
+        $writer = New-Object System.IO.StreamWriter($tmp, $false, $utf8)
+        foreach ($m in @($Messages)) {
+            if ($null -eq $m) { continue }
+            $line = ConvertTo-ChatMessageJsonLine -Message $m
+            if (-not [string]::IsNullOrWhiteSpace($line)) {
+                $writer.WriteLine($line)
+            }
+        }
+        $writer.Flush()
+        $writer.Dispose()
+        $writer = $null
+
+        if (Test-Path -LiteralPath $Path) {
+            $bak = $Path + '.bak'
+            try {
+                if (Test-Path -LiteralPath $bak) { Remove-Item -LiteralPath $bak -Force -ErrorAction SilentlyContinue }
+                Move-Item -LiteralPath $Path -Destination $bak -Force
+            } catch { }
+        }
+        Move-Item -LiteralPath $tmp -Destination $Path -Force
+    }
+    catch {
+        if ($writer) { try { $writer.Dispose() } catch { } }
+        if (Test-Path -LiteralPath $tmp) {
+            Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+        }
+        Write-AppLog -Level ERROR -Message ("JSONL 저장 실패: " + $Path) -Exception $_.Exception
+        throw
+    }
+}
+
+function Append-ChatMessageJsonl {
+    <#
+    .SYNOPSIS
+        JSONL 파일 끝에 메시지 1건을 append 한다.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)]$Message
+    )
+
+    $dir = Split-Path -Parent $Path
+    if ($dir -and -not (Test-Path -LiteralPath $dir)) {
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+    }
+
+    $line = ConvertTo-ChatMessageJsonLine -Message $Message
+    $utf8 = New-Object System.Text.UTF8Encoding $false
+    $writer = $null
+    try {
+        $writer = New-Object System.IO.StreamWriter($Path, $true, $utf8)
+        $writer.WriteLine($line)
+        $writer.Flush()
+    }
+    finally {
+        if ($writer) { $writer.Dispose() }
+    }
+}
+
+function Import-LegacyChatMessages {
+    <#
+    .SYNOPSIS
+        구형 { messages: [] } JSON 또는 배열 JSON에서 메시지 목록 추출.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+    if (-not (Test-Path -LiteralPath $Path)) { return @() }
+
+    $data = Import-JsonSafely -Path $Path -DefaultValue @{ messages = @() }
+    if ($null -eq $data) { return @() }
+
+    if ($data -is [System.Array]) { return @($data) }
+
+    try {
+        $names = @($data.PSObject.Properties.Name)
+        if ($names -contains 'messages') {
+            $msgs = $data.messages
+            if ($null -eq $msgs) { return @() }
+            if ($msgs -isnot [System.Array]) { return @($msgs) }
+            return @($msgs)
+        }
+    } catch { }
+
+    return @()
+}
+
+function Convert-LegacyChatFileIfNeeded {
+    <#
+    .SYNOPSIS
+        구형 .json 이 있고 .jsonl 이 없으면 JSONL 로 마이그레이션 후 .json.bak 처리.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$Md5,
+        [Parameter(Mandatory = $true)][string]$YearMonth
+    )
+
+    $jsonl = Get-ChatFilePath -Md5 $Md5 -YearMonth $YearMonth
+    $legacy = Get-ChatLegacyFilePath -Md5 $Md5 -YearMonth $YearMonth
+
+    if (Test-Path -LiteralPath $jsonl) { return }
+    if (-not (Test-Path -LiteralPath $legacy)) { return }
+
+    try {
+        $msgs = @(Import-LegacyChatMessages -Path $legacy)
+        Write-ChatMessagesJsonl -Path $jsonl -Messages $msgs
+        $bak = $legacy + '.bak'
+        try {
+            if (Test-Path -LiteralPath $bak) { Remove-Item -LiteralPath $bak -Force -ErrorAction SilentlyContinue }
+            Move-Item -LiteralPath $legacy -Destination $bak -Force
+        } catch {
+            # 이동 실패해도 jsonl 이 있으면 동작 가능
+        }
+        Write-AppLog -Level INFO -Message ("채팅 파일 마이그레이션: " + $legacy + " -> " + $jsonl + " (" + $msgs.Count + "건)")
+        Clear-ChatMessageIdIndex -Md5 $Md5 -YearMonth $YearMonth
+    }
+    catch {
+        Write-AppLog -Level ERROR -Message ("채팅 마이그레이션 실패: " + $legacy) -Exception $_.Exception
+    }
+}
+
+function Get-ChatMessageIdIndex {
+    <#
+    .SYNOPSIS
+        md5+월 메시지 ID 집합(Hashtable). 없으면 디스크에서 구축.
+        키는 대문자 정규화하여 대소문자 무시 비교.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$Md5,
+        [Parameter(Mandatory = $true)][string]$YearMonth
+    )
+
+    if ($null -eq $script:ChatMsgIdIndex) { $script:ChatMsgIdIndex = @{} }
+    $cacheKey = Get-ChatMessageIdCacheKey -Md5 $Md5 -YearMonth $YearMonth
+    if ($script:ChatMsgIdIndex.ContainsKey($cacheKey)) {
+        return $script:ChatMsgIdIndex[$cacheKey]
+    }
+
+    Convert-LegacyChatFileIfNeeded -Md5 $Md5 -YearMonth $YearMonth
+
+    $set = @{}
+    $filePath = Get-ChatFilePath -Md5 $Md5 -YearMonth $YearMonth
+    if (Test-Path -LiteralPath $filePath) {
+        foreach ($m in @(Read-ChatMessagesJsonl -Path $filePath)) {
+            if ($null -eq $m) { continue }
+            $id = $null
+            try { $id = [string]$m.aa } catch { $id = $null }
+            if (-not [string]::IsNullOrWhiteSpace($id)) {
+                $set[$id.ToUpperInvariant()] = $true
+            }
+        }
+    }
+
+    $script:ChatMsgIdIndex[$cacheKey] = $set
+    return $set
+}
+
 function Get-ChatMessages {
     <#
     .SYNOPSIS
-        특정 md5 + 월 파일의 messages 배열을 반환한다.
+        특정 md5 + 월의 JSONL 메시지 배열을 반환한다.
+        구형 .json 이 있으면 자동 마이그레이션한다.
     #>
     param(
         [Parameter(Mandatory = $true)]
@@ -896,30 +1168,18 @@ function Get-ChatMessages {
         [string]$YearMonth = (Get-Date -Format 'yyyyMM')
     )
 
+    Convert-LegacyChatFileIfNeeded -Md5 $Md5 -YearMonth $YearMonth
     $path = Get-ChatFilePath -Md5 $Md5 -YearMonth $YearMonth
     if (-not (Test-Path -LiteralPath $path)) {
         return @()
     }
-
-    $data = Import-JsonSafely -Path $path -DefaultValue @{ messages = @() }
-    if ($null -eq $data) { return @() }
-
-    if ($data.PSObject.Properties.Name -contains 'messages') {
-        $msgs = $data.messages
-        if ($null -eq $msgs) { return @() }
-        if ($msgs -isnot [System.Array]) { return @($msgs) }
-        return @($msgs)
-    }
-
-    # 배열 자체로 저장된 경우
-    if ($data -is [System.Array]) { return @($data) }
-    return @()
+    return @(Read-ChatMessagesJsonl -Path $path)
 }
 
 function Save-ChatMessages {
     <#
     .SYNOPSIS
-        채팅 메시지 배열을 월별 파일에 저장한다.
+        채팅 메시지 배열 전체를 월별 JSONL 로 저장한다 (전체 재작성).
     #>
     param(
         [Parameter(Mandatory = $true)]
@@ -934,18 +1194,16 @@ function Save-ChatMessages {
     )
 
     $path = Get-ChatFilePath -Md5 $Md5 -YearMonth $YearMonth
-    $obj = [ordered]@{
-        md5      = $Md5
-        month    = $YearMonth
-        messages = @($Messages)
-    }
-    Save-JsonSafely -Path $path -Object $obj
+    Write-ChatMessagesJsonl -Path $path -Messages @($Messages)
+    Clear-ChatMessageIdIndex -Md5 $Md5 -YearMonth $YearMonth
+    # 인덱스 재구축 (호출측 연속 Add 대비)
+    [void](Get-ChatMessageIdIndex -Md5 $Md5 -YearMonth $YearMonth)
 }
 
 function Add-ChatMessage {
     <#
     .SYNOPSIS
-        메시지를 월별 파일에 추가한다. 동일 aa(메시지 ID)가 있으면 건너뛴다.
+        메시지를 월별 JSONL 에 append 한다. 동일 aa 가 있으면 건너뛴다.
     .OUTPUTS
         [bool] 실제로 추가되었으면 $true
     #>
@@ -960,24 +1218,28 @@ function Add-ChatMessage {
         [string]$YearMonth = (Get-Date -Format 'yyyyMM')
     )
 
-    $msgs = @(Get-ChatMessages -Md5 $Md5 -YearMonth $YearMonth)
-    $msgId = [string]$Message.aa
+    $msgId = $null
+    try { $msgId = [string]$Message.aa } catch { $msgId = $null }
 
-    if ($msgId -and ($msgs | Where-Object { [string]$_.aa -eq $msgId })) {
+    $idSet = Get-ChatMessageIdIndex -Md5 $Md5 -YearMonth $YearMonth
+    if ($null -eq $idSet) { $idSet = @{} }
+    $idKey = if (-not [string]::IsNullOrWhiteSpace($msgId)) { $msgId.ToUpperInvariant() } else { $null }
+    if ($idKey -and $idSet.ContainsKey($idKey)) {
         return $false
     }
 
-    $msgs += $Message
-    # aa(또는 시간) 기준 정렬
-    $sorted = $msgs | Sort-Object {
-        $t = $_.ae
-        if ($t) {
-            try { [datetime]$t } catch { [datetime]::MinValue }
-        }
-        else { [datetime]::MinValue }
+    $path = Get-ChatFilePath -Md5 $Md5 -YearMonth $YearMonth
+    try {
+        Append-ChatMessageJsonl -Path $path -Message $Message
+    }
+    catch {
+        Write-AppLog -Level ERROR -Message "메시지 append 실패 md5=$Md5 ym=$YearMonth" -Exception $_.Exception
+        return $false
     }
 
-    Save-ChatMessages -Md5 $Md5 -Messages @($sorted) -YearMonth $YearMonth
+    if ($idKey) {
+        $idSet[$idKey] = $true
+    }
     return $true
 }
 
@@ -985,24 +1247,30 @@ function Get-AvailableChatMonths {
     <#
     .SYNOPSIS
         특정 md5에 대해 존재하는 월 파일 목록을 최신순으로 반환한다.
+        .jsonl 및 구형 .json 모두 인식.
     #>
     param(
         [Parameter(Mandatory = $true)]
         [string]$Md5
     )
 
-    $pattern = "{0}_*.json" -f $Md5
-    $files = Get-ChildItem -LiteralPath $script:ChatsDirectory -Filter $pattern -ErrorAction SilentlyContinue
-    if (-not $files) { return @() }
+    if (-not $script:ChatsDirectory -or -not (Test-Path -LiteralPath $script:ChatsDirectory)) {
+        return @()
+    }
 
-    return @(
-        $files |
-            ForEach-Object {
-                if ($_.BaseName -match "_(\d{6})$") { $Matches[1] }
-            } |
-            Sort-Object -Descending
-    )
+    $months = New-Object System.Collections.Generic.HashSet[string]
+    $rx = '^{0}_(\d{{6}})\.(jsonl|json)$' -f [regex]::Escape($Md5)
+    $files = Get-ChildItem -LiteralPath $script:ChatsDirectory -File -ErrorAction SilentlyContinue
+    foreach ($f in @($files)) {
+        if ($f.Name -match $rx) {
+            [void]$months.Add($Matches[1])
+        }
+    }
+
+    if ($months.Count -eq 0) { return @() }
+    return @($months | Sort-Object -Descending)
 }
+
 
 #endregion
 
