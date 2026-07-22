@@ -1,8 +1,8 @@
 #requires -version 5.1
 <#
-    ë‚´ë¶€ë§ ORCA ì±— í´ë¼ì´ì–¸íŠ¸. PS 5.1 + WinForms, ì™¸ë¶€ ì˜ì¡´ì„± ì—†ìŒ.
-    ì‹¤í–‰  : powershell.exe -ExecutionPolicy Bypass -File .\InternalChat.ps1
-    ì§„ë‹¨  : powershell.exe -File .\InternalChat.ps1 -SelfTest
+    ³»ºÎ¸Á ORCA Ãª Å¬¶óÀÌ¾ğÆ®. PS 5.1 + WinForms, ¿ÜºÎ ÀÇÁ¸¼º ¾øÀ½.
+    ½ÇÇà  : powershell.exe -ExecutionPolicy Bypass -File .\InternalChat.ps1
+    Áø´Ü  : powershell.exe -File .\InternalChat.ps1 -SelfTest
 #>
 param(
     [switch]$SelfTest
@@ -10,13 +10,13 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-# ---- ì–´ì…ˆë¸”ë¦¬ -----------------------------------------------------------------
+# ---- ¾î¼Àºí¸® -----------------------------------------------------------------
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.Security
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
-# PS ëŸ°íƒ€ì„ì€ ë°±ê·¸ë¼ìš´ë“œ ìŠ¤ë ˆë“œì—ì„œ ëª» ëŒë¦¼ â†’ HTTP í´ë§ì€ ìˆœìˆ˜ C# í´ë˜ìŠ¤ë¡œ
+# PS ·±Å¸ÀÓÀº ¹é±×¶ó¿îµå ½º·¹µå¿¡¼­ ¸ø µ¹¸² ¡æ HTTP Æú¸µÀº ¼ø¼ö C# Å¬·¡½º·Î
 try {
     Add-Type -TypeDefinition @"
 using System;
@@ -46,10 +46,10 @@ public static class InternalChatPollHttp {
 }
 "@ -ErrorAction Stop
 } catch {
-    # ì¬ì‹¤í–‰ ì‹œ ì¤‘ë³µ ë¡œë“œ ë¬´ì‹œ
+    # Àç½ÇÇà ½Ã Áßº¹ ·Îµå ¹«½Ã
 }
 
-# WM_SETREDRAW. ListView ê¹œë¹¡ì„ ë°©ì§€
+# WM_SETREDRAW. ListView ±ôºıÀÓ ¹æÁö
 try {
     Add-Type -TypeDefinition @"
 using System;
@@ -60,12 +60,12 @@ public static class NativeMethods {
 }
 "@ -ErrorAction Stop
 } catch {
-    # ì¬ì‹¤í–‰ ì‹œ ì¤‘ë³µ ë¡œë“œ ë¬´ì‹œ
+    # Àç½ÇÇà ½Ã Áßº¹ ·Îµå ¹«½Ã
 }
 
 
 
-# ---- ê¸°ë³¸ ì„œë²„ ì„¤ì • (data/config.jsonì´ ìš°ì„ ) ---------------------------------
+# ---- ±âº» ¼­¹ö ¼³Á¤ (data/config.jsonÀÌ ¿ì¼±) ---------------------------------
 $script:ApiBase = 'http://localhost:9080/orca'
 $script:PathLogin       = '/cmn/login/login.do'
 $script:PathUserList    = '/note/retrieveSearchList.do?rows=999&page=1&s_prjt_id=PROJECT'
@@ -90,7 +90,7 @@ $script:LogDirectory = $null
 $script:LogFilePath  = $null
 
 function Initialize-AppLogger {
-    # ë¡œê·¸ ë””ë ‰í† ë¦¬ ìƒì„± + 30ì¼ ì§€ë‚œ ë¡œê·¸ ì‚­ì œ
+    # ·Î±× µğ·ºÅä¸® »ı¼º + 30ÀÏ Áö³­ ·Î±× »èÁ¦
     param(
         [Parameter(Mandatory = $true)]
         [string]$LogDirectory,
@@ -104,7 +104,7 @@ function Initialize-AppLogger {
         New-Item -ItemType Directory -Path $script:LogDirectory -Force | Out-Null
     }
 
-    # 30ì¼ ì§€ë‚œ ë¡œê·¸ ì •ë¦¬
+    # 30ÀÏ Áö³­ ·Î±× Á¤¸®
     try {
         $cutoff = (Get-Date).AddDays(-$LogRetentionDays)
         Get-ChildItem -LiteralPath $script:LogDirectory -Filter 'app_*.log' -File -ErrorAction SilentlyContinue |
@@ -141,7 +141,7 @@ $script:MemoryUserId       = $null
 $script:MemoryPassword     = $null
 
 function Initialize-SecurityModule {
-    # credentials.dat ê²½ë¡œ ì„¤ì • + data í´ë” ACL í˜„ì¬ ì‚¬ìš©ì ì „ìš©ìœ¼ë¡œ
+    # credentials.dat °æ·Î ¼³Á¤ + data Æú´õ ACL ÇöÀç »ç¿ëÀÚ Àü¿ëÀ¸·Î
     param(
         [Parameter(Mandatory = $true)]
         [string]$DataDirectory
@@ -149,7 +149,7 @@ function Initialize-SecurityModule {
 
     $script:CredentialFilePath = Join-Path $DataDirectory 'credentials.dat'
 
-    # ìƒì† ì œê±°í•˜ê³  í˜„ì¬ ì‚¬ìš©ìë§Œ FullControl
+    # »ó¼Ó Á¦°ÅÇÏ°í ÇöÀç »ç¿ëÀÚ¸¸ FullControl
     try {
         $acl = Get-Acl -LiteralPath $DataDirectory
         $acl.SetAccessRuleProtection($true, $false)
@@ -164,15 +164,15 @@ function Initialize-SecurityModule {
         )
         $acl.AddAccessRule($rule)
         Set-Acl -LiteralPath $DataDirectory -AclObject $acl
-        Write-AppLog -Level INFO -Message "ë°ì´í„° í´ë” ACL ì„¤ì • ì™„ë£Œ: $DataDirectory"
+        Write-AppLog -Level INFO -Message "µ¥ÀÌÅÍ Æú´õ ACL ¼³Á¤ ¿Ï·á: $DataDirectory"
     } catch {
-        Write-AppLog -Level WARN -Message "ë°ì´í„° í´ë” ACL ì„¤ì • ì‹¤íŒ¨ (ê³„ì† ì§„í–‰)" -Exception $_.Exception
+        Write-AppLog -Level WARN -Message "µ¥ÀÌÅÍ Æú´õ ACL ¼³Á¤ ½ÇÆĞ (°è¼Ó ÁøÇà)" -Exception $_.Exception
     }
 }
 
 
 function Protect-StringData {
-    # DPAPI CurrentUser ë²”ìœ„ë¡œ ì•”í˜¸í™” â†’ Base64
+    # DPAPI CurrentUser ¹üÀ§·Î ¾ÏÈ£È­ ¡æ Base64
     param(
         [Parameter(Mandatory = $true)]
         [string]$PlainText
@@ -188,7 +188,7 @@ function Protect-StringData {
 }
 
 function Unprotect-StringData {
-    # DPAPI ë³µí˜¸í™”
+    # DPAPI º¹È£È­
     param(
         [Parameter(Mandatory = $true)]
         [string]$ProtectedBase64
@@ -204,7 +204,7 @@ function Unprotect-StringData {
 }
 
 function Save-UserCredential {
-    # ID/PW ì•”í˜¸í™” ì €ì¥ + ë©”ëª¨ë¦¬ ìºì‹œ
+    # ID/PW ¾ÏÈ£È­ ÀúÀå + ¸Ş¸ğ¸® Ä³½Ã
     param(
         [Parameter(Mandatory = $true)]
         [string]$UserId,
@@ -225,11 +225,11 @@ function Save-UserCredential {
     $script:MemoryUserId   = $UserId
     $script:MemoryPassword = $Password
 
-    Write-AppLog -Level INFO -Message "ìê²© ì¦ëª… ì €ì¥ ì™„ë£Œ (UserId=$UserId)"
+    Write-AppLog -Level INFO -Message "ÀÚ°İ Áõ¸í ÀúÀå ¿Ï·á (UserId=$UserId)"
 }
 
 function Get-UserCredential {
-    # ë©”ëª¨ë¦¬ ìºì‹œ ìš°ì„ , ì—†ìœ¼ë©´ credentials.dat ì½ì–´ ë³µí˜¸í™”
+    # ¸Ş¸ğ¸® Ä³½Ã ¿ì¼±, ¾øÀ¸¸é credentials.dat ÀĞ¾î º¹È£È­
     if ($script:MemoryUserId -and $script:MemoryPassword) {
         return [PSCustomObject]@{
             UserId   = $script:MemoryUserId
@@ -255,14 +255,14 @@ function Get-UserCredential {
         }
     }
     catch {
-        Write-AppLog -Level ERROR -Message "ìê²© ì¦ëª… ë³µí˜¸í™” ì‹¤íŒ¨" -Exception $_.Exception
+        Write-AppLog -Level ERROR -Message "ÀÚ°İ Áõ¸í º¹È£È­ ½ÇÆĞ" -Exception $_.Exception
         return $null
     }
 }
 
 
 function Clear-UserCredential {
-    # ìê²© ì¦ëª… íŒŒì¼ + ë©”ëª¨ë¦¬ ì‚­ì œ
+    # ÀÚ°İ Áõ¸í ÆÄÀÏ + ¸Ş¸ğ¸® »èÁ¦
     try {
         if ($script:CredentialFilePath -and (Test-Path -LiteralPath $script:CredentialFilePath)) {
             Remove-Item -LiteralPath $script:CredentialFilePath -Force -ErrorAction SilentlyContinue
@@ -282,7 +282,7 @@ function Get-AppConfigPath {
 }
 
 function Get-AppConfig {
-    # data/config.json â†’ PSCustomObject
+    # data/config.json ¡æ PSCustomObject
     $p = Get-AppConfigPath
     if (-not $p -or -not (Test-Path -LiteralPath $p)) { return $null }
     try {
@@ -291,13 +291,13 @@ function Get-AppConfig {
         return ($raw | ConvertFrom-Json)
     }
     catch {
-        Write-AppLog -Level WARN -Message "config.json ë¡œë“œ ì‹¤íŒ¨" -Exception $_.Exception
+        Write-AppLog -Level WARN -Message "config.json ·Îµå ½ÇÆĞ" -Exception $_.Exception
         return $null
     }
 }
 
 function Save-AppConfig {
-    # config.json ê¸°ë¡. ì°½ ìœ„ì¹˜/ì„œë²„ URL ì €ì¥
+    # config.json ±â·Ï. Ã¢ À§Ä¡/¼­¹ö URL ÀúÀå
     param(
         [string]$ApiBase,
         [int]$PollIntervalMs = -1,
@@ -316,7 +316,7 @@ function Save-AppConfig {
     }
     $base = ([string]$base).Trim().TrimEnd('/')
 
-    # í´ë§/ì•Œë¦¼ ê³ ì •ê°’ (ì„¤ì • UIê°€ ì—†ìœ¼ë‹ˆ í•˜ë“œì½”ë”©)
+    # Æú¸µ/¾Ë¸² °íÁ¤°ª (¼³Á¤ UI°¡ ¾øÀ¸´Ï ÇÏµåÄÚµù)
     $poll = 15000
     $bHide = $true
     $bOther = $true
@@ -355,12 +355,12 @@ function Save-AppConfig {
 
     $payload = ($payloadObj | ConvertTo-Json -Compress -Depth 5)
     Set-Content -LiteralPath $p -Value $payload -Encoding UTF8 -Force
-    Write-AppLog -Level INFO -Message ("ì„¤ì • ì €ì¥ apiBase={0} poll={1}ms" -f $base, $poll)
+    Write-AppLog -Level INFO -Message ("¼³Á¤ ÀúÀå apiBase={0} poll={1}ms" -f $base, $poll)
 }
 
 
 function Set-ApiBaseAddress {
-    # ApiBase ì—…ë°ì´íŠ¸ â†’ URL ì¬ê³„ì‚°
+    # ApiBase ¾÷µ¥ÀÌÆ® ¡æ URL Àç°è»ê
     param(
         [Parameter(Mandatory = $true)]
         [string]$ApiBase
@@ -374,7 +374,7 @@ function Set-ApiBaseAddress {
 }
 
 function Import-ApiBaseFromConfig {
-    # config.json ì½ì–´ì„œ ì „ì—­ ë³€ìˆ˜ ë®ì–´ì“°ê¸°
+    # config.json ÀĞ¾î¼­ Àü¿ª º¯¼ö µ¤¾î¾²±â
     $cfg = Get-AppConfig
     if (-not $cfg) { return }
 
@@ -384,11 +384,11 @@ function Import-ApiBaseFromConfig {
         [void](Set-ApiBaseAddress -ApiBase $base)
     }
 
-    # í´ë§ 10ì´ˆ ê³ ì •
+    # Æú¸µ 10ÃÊ °íÁ¤
     $script:PollIntervalMs = 10000
     if ($script:PollTimer) { $script:PollTimer.Interval = 10000 }
 
-    # ì•Œë¦¼ í•­ìƒ ì¼¬
+    # ¾Ë¸² Ç×»ó ÄÔ
     $script:BalloonWhenChatHidden = $true
     $script:BalloonOtherChat = $true
     try {
@@ -423,7 +423,7 @@ function Get-AuthToken {
 
 
 function Clear-SensitiveMemory {
-    # ì¢…ë£Œ ì‹œ ë©”ëª¨ë¦¬ì—ì„œ í† í°/ID/PW ì œê±°
+    # Á¾·á ½Ã ¸Ş¸ğ¸®¿¡¼­ ÅäÅ«/ID/PW Á¦°Å
     $script:MemoryToken    = $null
     $script:MemoryUserId   = $null
     $script:MemoryPassword = $null
@@ -431,7 +431,7 @@ function Clear-SensitiveMemory {
 
 
 
-# ---- DataManager (ë¡œì»¬ JSON ìŠ¤í† ì–´) -------------------------------------------
+# ---- DataManager (·ÎÄÃ JSON ½ºÅä¾î) -------------------------------------------
 
 $script:DataDirectory  = $null
 $script:ChatsDirectory = $null
@@ -440,7 +440,7 @@ $script:UsersPath         = $null
 $script:SyncPath          = $null
 
 function Initialize-DataManager {
-    # ê²½ë¡œ ì„¤ì • + ì´ˆê¸° íŒŒì¼ ìƒì„± (conversations.json, users.json)
+    # °æ·Î ¼³Á¤ + ÃÊ±â ÆÄÀÏ »ı¼º (conversations.json, users.json)
     param(
         [Parameter(Mandatory = $true)]
         [string]$DataDirectory
@@ -452,7 +452,7 @@ function Initialize-DataManager {
     $script:UsersPath         = Join-Path $DataDirectory 'users.json'
     $script:SyncPath          = Join-Path $DataDirectory 'sync.json'
 
-    # Initialize-Applicationì—ì„œ ë¨¼ì € ë§Œë“¤ì§€ë§Œ í˜¹ì‹œ ëª°ë¼ ë°©ì–´
+    # Initialize-Application¿¡¼­ ¸ÕÀú ¸¸µéÁö¸¸ È¤½Ã ¸ô¶ó ¹æ¾î
     foreach ($dir in @($script:DataDirectory, $script:ChatsDirectory)) {
         if (-not (Test-Path -LiteralPath $dir)) {
             New-Item -ItemType Directory -Path $dir -Force | Out-Null
@@ -469,7 +469,7 @@ function Initialize-DataManager {
 
 
 function Save-JsonSafely {
-    # .tmp â†’ rename. ê¸°ì¡´ íŒŒì¼ì€ .bak ë°±ì—…
+    # .tmp ¡æ rename. ±âÁ¸ ÆÄÀÏÀº .bak ¹é¾÷
     param(
         [Parameter(Mandatory = $true)]
         [string]$Path,
@@ -488,7 +488,7 @@ function Save-JsonSafely {
         'null'
     }
     else {
-        # PS 5.1 DefaultDepth=2ë¼ 20ìœ¼ë¡œ ëŠ˜ë¦¼
+        # PS 5.1 DefaultDepth=2¶ó 20À¸·Î ´Ã¸²
         ConvertTo-Json -InputObject $Object -Depth 20 -Compress:$false
     }
 
@@ -496,7 +496,7 @@ function Save-JsonSafely {
     $bakPath  = "$Path.bak"
 
     try {
-        # UTF-8 BOM ì—†ì´
+        # UTF-8 BOM ¾øÀÌ
         $utf8NoBom = New-Object System.Text.UTF8Encoding $false
         [System.IO.File]::WriteAllText($tempPath, $json, $utf8NoBom)
 
@@ -504,14 +504,14 @@ function Save-JsonSafely {
             Copy-Item -LiteralPath $Path -Destination $bakPath -Force
         }
 
-        # rename (ì›ìì  êµì²´. NTFSì—ì„  ê±°ì˜ atomic)
+        # rename (¿øÀÚÀû ±³Ã¼. NTFS¿¡¼± °ÅÀÇ atomic)
         if (Test-Path -LiteralPath $Path) {
             Remove-Item -LiteralPath $Path -Force
         }
         Move-Item -LiteralPath $tempPath -Destination $Path -Force
     }
     catch {
-        Write-AppLog -Level ERROR -Message "Save-JsonSafely ì‹¤íŒ¨: $Path" -Exception $_.Exception
+        Write-AppLog -Level ERROR -Message "Save-JsonSafely ½ÇÆĞ: $Path" -Exception $_.Exception
         if (Test-Path -LiteralPath $tempPath) {
             Remove-Item -LiteralPath $tempPath -Force -ErrorAction SilentlyContinue
         }
@@ -520,7 +520,7 @@ function Save-JsonSafely {
 }
 
 function Import-JsonSafely {
-    # ë¡œë“œ ì‹¤íŒ¨ â†’ .bak â†’ DefaultValue ìˆœìœ¼ë¡œ í´ë°±
+    # ·Îµå ½ÇÆĞ ¡æ .bak ¡æ DefaultValue ¼øÀ¸·Î Æú¹é
     param(
         [Parameter(Mandatory = $true)]
         [string]$Path,
@@ -542,7 +542,7 @@ function Import-JsonSafely {
         return $obj
     }
     catch {
-        Write-AppLog -Level WARN -Message "JSON ë¡œë“œ ì‹¤íŒ¨, .bak ì‹œë„: $Path" -Exception $_.Exception
+        Write-AppLog -Level WARN -Message "JSON ·Îµå ½ÇÆĞ, .bak ½Ãµµ: $Path" -Exception $_.Exception
 
         $bakPath = "$Path.bak"
         if (Test-Path -LiteralPath $bakPath) {
@@ -550,11 +550,11 @@ function Import-JsonSafely {
                 $raw = [System.IO.File]::ReadAllText($bakPath, [System.Text.Encoding]::UTF8)
                 $obj = $raw | ConvertFrom-Json
                 Save-JsonSafely -Path $Path -Object $obj
-                Write-AppLog -Level INFO -Message "bak ë³µì› ì„±ê³µ: $Path"
+                Write-AppLog -Level INFO -Message "bak º¹¿ø ¼º°ø: $Path"
                 return $obj
             }
             catch {
-                Write-AppLog -Level ERROR -Message "bak ë³µì› ì‹¤íŒ¨: $Path" -Exception $_.Exception
+                Write-AppLog -Level ERROR -Message "bak º¹¿ø ½ÇÆĞ: $Path" -Exception $_.Exception
             }
         }
 
@@ -564,7 +564,7 @@ function Import-JsonSafely {
 
 
 function Get-ConversationMD5 {
-    # ì°¸ê°€ì ID ì •ë ¬ â†’ | join â†’ MD5. ë™ì¼ ë©¤ë²„ë©´ ê°™ì€ í‚¤
+    # Âü°¡ÀÚ ID Á¤·Ä ¡æ | join ¡æ MD5. µ¿ÀÏ ¸â¹ö¸é °°Àº Å°
     param(
         [Parameter(Mandatory = $true)]
         [string[]]$ParticipantIds
@@ -598,7 +598,7 @@ function Get-ChatFilePath {
 }
 
 function Get-ChatLegacyFilePath {
-    # êµ¬ë²„ì „ chats/{md5}_{yyyyMM}.json (ë§ˆì´ê·¸ë ˆì´ì…˜ ì†ŒìŠ¤)
+    # ±¸¹öÀü chats/{md5}_{yyyyMM}.json (¸¶ÀÌ±×·¹ÀÌ¼Ç ¼Ò½º)
     param(
         [Parameter(Mandatory = $true)]
         [string]$Md5,
@@ -611,10 +611,10 @@ function Get-ChatLegacyFilePath {
 }
 
 
-# ---- ì¸ë©”ëª¨ë¦¬ ìƒíƒœ / dirty flush ----------------------------------------------------
+# ---- ÀÎ¸Ş¸ğ¸® »óÅÂ / dirty flush ----------------------------------------------------
 
 function Initialize-AppState {
-    # ì¸ë©”ëª¨ë¦¬ ì¸ë±ìŠ¤ ì´ˆê¸°í™”
+    # ÀÎ¸Ş¸ğ¸® ÀÎµ¦½º ÃÊ±âÈ­
     $script:UserById = @{}
     $script:ConvByMd5 = @{}
     $script:ConvOrder = New-Object System.Collections.ArrayList
@@ -696,18 +696,18 @@ function Import-SyncFromDisk {
 }
 
 function Import-AppStateFromDisk {
-    # users.json / conversations.json / sync.json â†’ ë©”ëª¨ë¦¬
+    # users.json / conversations.json / sync.json ¡æ ¸Ş¸ğ¸®
     Initialize-AppState
-    try { Import-UsersFromDisk } catch { Write-AppLog -Level ERROR -Message "users ë¡œë“œ ì‹¤íŒ¨" -Exception $_.Exception }
-    try { Import-ConversationsFromDisk } catch { Write-AppLog -Level ERROR -Message "conversations ë¡œë“œ ì‹¤íŒ¨" -Exception $_.Exception }
-    try { Import-SyncFromDisk } catch { Write-AppLog -Level ERROR -Message "sync ë¡œë“œ ì‹¤íŒ¨" -Exception $_.Exception }
+    try { Import-UsersFromDisk } catch { Write-AppLog -Level ERROR -Message "users ·Îµå ½ÇÆĞ" -Exception $_.Exception }
+    try { Import-ConversationsFromDisk } catch { Write-AppLog -Level ERROR -Message "conversations ·Îµå ½ÇÆĞ" -Exception $_.Exception }
+    try { Import-SyncFromDisk } catch { Write-AppLog -Level ERROR -Message "sync ·Îµå ½ÇÆĞ" -Exception $_.Exception }
     $script:DirtyUsers = $false
     $script:DirtyConversations = $false
     $script:DirtySync = $false
     $uc = 0; $cc = 0
     try { $uc = $script:UserById.Count } catch { }
     try { $cc = $script:ConvByMd5.Count } catch { }
-    Write-AppLog -Level DEBUG -Message ("AppState ë¡œë“œ users={0} convs={1}" -f $uc, $cc)
+    Write-AppLog -Level DEBUG -Message ("AppState ·Îµå users={0} convs={1}" -f $uc, $cc)
 }
 
 function Set-SyncState {
@@ -784,7 +784,7 @@ function Write-ConversationsToDiskFromCache {
 }
 
 function Save-AppStateDirty {
-    # dirty í”Œë˜ê·¸ ì¼œì§„ ê²ƒë§Œ ë””ìŠ¤í¬ flush
+    # dirty ÇÃ·¡±× ÄÑÁø °Í¸¸ µğ½ºÅ© flush
     Ensure-AppStateReady
     $flushed = New-Object System.Collections.ArrayList
     if ($script:DirtyUsers) {
@@ -792,7 +792,7 @@ function Save-AppStateDirty {
             Write-UsersToDiskFromCache
             [void]$flushed.Add('users')
         } catch {
-            Write-AppLog -Level ERROR -Message "users flush ì‹¤íŒ¨" -Exception $_.Exception
+            Write-AppLog -Level ERROR -Message "users flush ½ÇÆĞ" -Exception $_.Exception
         }
     }
     if ($script:DirtyConversations) {
@@ -800,7 +800,7 @@ function Save-AppStateDirty {
             Write-ConversationsToDiskFromCache
             [void]$flushed.Add('conv')
         } catch {
-            Write-AppLog -Level ERROR -Message "conversations flush ì‹¤íŒ¨" -Exception $_.Exception
+            Write-AppLog -Level ERROR -Message "conversations flush ½ÇÆĞ" -Exception $_.Exception
         }
     }
     if ($script:DirtySync) {
@@ -808,7 +808,7 @@ function Save-AppStateDirty {
             Write-SyncStateToDisk
             [void]$flushed.Add('sync')
         } catch {
-            Write-AppLog -Level ERROR -Message "sync flush ì‹¤íŒ¨" -Exception $_.Exception
+            Write-AppLog -Level ERROR -Message "sync flush ½ÇÆĞ" -Exception $_.Exception
         }
     }
     if ($flushed.Count -gt 0) {
@@ -818,14 +818,14 @@ function Save-AppStateDirty {
 
 
 function Get-SyncState {
-    # ë™ê¸°í™” ì»¤ì„œ. ë¯¸ë¡œë“œ ì‹œ ë””ìŠ¤í¬ì—ì„œ í•œ ë²ˆ ì½ìŒ
+    # µ¿±âÈ­ Ä¿¼­. ¹Ì·Îµå ½Ã µğ½ºÅ©¿¡¼­ ÇÑ ¹ø ÀĞÀ½
     Ensure-AppStateReady
     if (-not $script:SyncLoaded) { Import-SyncFromDisk }
     return $script:SyncState
 }
 
 function Save-SyncState {
-    # Set-SyncState ë˜í¼. ì‹¤ì œ flushëŠ” Save-AppStateDirtyì—ì„œ
+    # Set-SyncState ·¡ÆÛ. ½ÇÁ¦ flush´Â Save-AppStateDirty¿¡¼­
     param(
         [Parameter(Mandatory = $true)][string]$LastSync,
         [Parameter(Mandatory = $true)][string]$LastMessageId,
@@ -838,7 +838,7 @@ function Save-SyncState {
 # ---- conversations.json --------------------------------------------------------
 
 function Get-Conversations {
-    # ConvOrder ìˆœì„œëŒ€ë¡œ ëŒ€í™” ëª©ë¡ ë°˜í™˜
+    # ConvOrder ¼ø¼­´ë·Î ´ëÈ­ ¸ñ·Ï ¹İÈ¯
     Ensure-AppStateReady
     $list = New-Object System.Collections.ArrayList
     foreach ($md5 in @($script:ConvOrder)) {
@@ -873,7 +873,7 @@ function Test-ConversationTitleLocked {
 }
 
 function New-ConversationRecord {
-    # ëŒ€í™” ë©”íƒ€ PSCustomObject ìƒì„±
+    # ´ëÈ­ ¸ŞÅ¸ PSCustomObject »ı¼º
     param(
         [string]$Md5,
         [string[]]$ParticipantIds = @(),
@@ -908,7 +908,7 @@ function New-ConversationRecord {
 
 
 function Update-ConversationMeta {
-    # ëŒ€í™” ë©”íƒ€ upsert. IncrementUnread/ClearUnread ìŠ¤ìœ„ì¹˜ë¡œ ë¯¸í™•ì¸ ì¹´ìš´íŠ¸ ì œì–´
+    # ´ëÈ­ ¸ŞÅ¸ upsert. IncrementUnread/ClearUnread ½ºÀ§Ä¡·Î ¹ÌÈ®ÀÎ Ä«¿îÆ® Á¦¾î
     param(
         [Parameter(Mandatory = $true)]
         [string]$Md5,
@@ -1023,25 +1023,25 @@ function Update-ConversationMeta {
 
 
 function Edit-SelectedConversationTitle {
-    # ìš°í´ë¦­ â†’ ì œëª© ë³€ê²½
+    # ¿ìÅ¬¸¯ ¡æ Á¦¸ñ º¯°æ
     try {
         if (-not $script:ConversationListView -or $script:ConversationListView.IsDisposed) { return }
         if ($script:ConversationListView.SelectedItems.Count -lt 1) {
-            Show-InfoMessage -Text 'ëŒ€í™”ë¥¼ ì„ íƒí•˜ì„¸ìš”.'
+            Show-InfoMessage -Text '´ëÈ­¸¦ ¼±ÅÃÇÏ¼¼¿ä.'
             return
         }
         $md5 = [string]$script:ConversationListView.SelectedItems[0].Tag
         if (-not $md5) { return }
         $conv = Get-ConversationByMd5 -Md5 $md5
         if (-not $conv) {
-            Show-InfoMessage -Text 'ëŒ€í™” ì •ë³´ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.'
+            Show-InfoMessage -Text '´ëÈ­ Á¤º¸¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.'
             return
         }
 
         $cur = Get-ConversationDisplayTitle -Conversation $conv -CurrentUserId $script:CurrentUserId
         try { Add-Type -AssemblyName Microsoft.VisualBasic -ErrorAction SilentlyContinue } catch { }
-        $newTitle = [Microsoft.VisualBasic.Interaction]::InputBox('ëŒ€í™” ì œëª©', 'ì œëª© ë³€ê²½', $cur)
-        # ì·¨ì†Œ ì‹œ ë¹ˆ ë¬¸ìì—´
+        $newTitle = [Microsoft.VisualBasic.Interaction]::InputBox('´ëÈ­ Á¦¸ñ', 'Á¦¸ñ º¯°æ', $cur)
+        # Ãë¼Ò ½Ã ºó ¹®ÀÚ¿­
         if ([string]::IsNullOrWhiteSpace($newTitle)) { return }
         $newTitle = $newTitle.Trim()
 
@@ -1051,32 +1051,32 @@ function Edit-SelectedConversationTitle {
 
         if ($script:CurrentChatMD5 -eq $md5) {
             if ($script:ChatForm -and -not $script:ChatForm.IsDisposed) {
-                $script:ChatForm.Text = "ëŒ€í™” - $newTitle"
+                $script:ChatForm.Text = "´ëÈ­ - $newTitle"
             }
             if ($script:ChatTitleLabel -and -not $script:ChatTitleLabel.IsDisposed) {
                 $script:ChatTitleLabel.Text = "  $newTitle"
             }
         }
-        Set-StatusSafe "ì œëª© ë³€ê²½: $newTitle"
-        Write-AppLog -Level INFO -Message "ì œëª© ë³€ê²½ md5=$md5 title=$newTitle"
+        Set-StatusSafe "Á¦¸ñ º¯°æ: $newTitle"
+        Write-AppLog -Level INFO -Message "Á¦¸ñ º¯°æ md5=$md5 title=$newTitle"
     }
     catch {
-        Write-AppLog -Level ERROR -Message "ì œëª© ë³€ê²½ ì‹¤íŒ¨: $($_.Exception.Message)" -Exception $_.Exception
+        Write-AppLog -Level ERROR -Message "Á¦¸ñ º¯°æ ½ÇÆĞ: $($_.Exception.Message)" -Exception $_.Exception
         try {
-            Show-ErrorMessage -Text "ì œëª© ë³€ê²½ ì‹¤íŒ¨:`n$($_.Exception.Message)"
+            Show-ErrorMessage -Text "Á¦¸ñ º¯°æ ½ÇÆĞ:`n$($_.Exception.Message)"
         } catch { }
     }
 }
 
 function Show-ChatParticipants {
-    # í˜„ì¬ ëŒ€í™” ì°¸ì—¬ì ëª©ë¡ MessageBox
+    # ÇöÀç ´ëÈ­ Âü¿©ÀÚ ¸ñ·Ï MessageBox
     if (-not $script:CurrentChatMD5) {
-        Show-InfoMessage -Text 'ëŒ€í™”ê°€ ì—†ìŠµë‹ˆë‹¤.'
+        Show-InfoMessage -Text '´ëÈ­°¡ ¾ø½À´Ï´Ù.'
         return
     }
     $conv = Get-ConversationByMd5 -Md5 $script:CurrentChatMD5
     if (-not $conv) {
-        Show-InfoMessage -Text 'ëŒ€í™” ì •ë³´ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.'
+        Show-InfoMessage -Text '´ëÈ­ Á¤º¸¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.'
         return
     }
 
@@ -1089,23 +1089,23 @@ function Show-ChatParticipants {
             $u = Get-UserById -Id $id
             if ($u) { [string]$u.name } else { $id }
         }
-        $mark = if ($id -eq $script:CurrentUserId) { ' (ë‚˜)' } else { '' }
+        $mark = if ($id -eq $script:CurrentUserId) { ' (³ª)' } else { '' }
         [void]$lines.Add(('- {0} ({1}){2}' -f $nm, $id, $mark))
     }
     if ($lines.Count -eq 0) {
-        [void]$lines.Add('(ì°¸ì—¬ì ì •ë³´ ì—†ìŒ)')
+        [void]$lines.Add('(Âü¿©ÀÚ Á¤º¸ ¾øÀ½)')
     }
-    $text = "ì°¸ì—¬ì $($lines.Count)ëª…`r`n`r`n" + ($lines -join "`r`n")
+    $text = "Âü¿©ÀÚ $($lines.Count)¸í`r`n`r`n" + ($lines -join "`r`n")
     [System.Windows.Forms.MessageBox]::Show(
         $text,
-        'ì°¸ì—¬ì ëª©ë¡',
+        'Âü¿©ÀÚ ¸ñ·Ï',
         [System.Windows.Forms.MessageBoxButtons]::OK,
         [System.Windows.Forms.MessageBoxIcon]::Information
     ) | Out-Null
 }
 
 function Set-ConversationRead {
-    # íŠ¹ì • ëŒ€í™” unread í•´ì œ
+    # Æ¯Á¤ ´ëÈ­ unread ÇØÁ¦
     param(
         [Parameter(Mandatory = $true)]
         [string]$Md5
@@ -1135,7 +1135,7 @@ function Get-UserById {
 }
 
 
-# ---- ì±„íŒ… ë©”ì‹œì§€ íŒŒì¼ (JSONL) ---------------------------------------------------
+# ---- Ã¤ÆÃ ¸Ş½ÃÁö ÆÄÀÏ (JSONL) ---------------------------------------------------
 
 function Get-ChatMessageIdCacheKey {
     param(
@@ -1146,7 +1146,7 @@ function Get-ChatMessageIdCacheKey {
 }
 
 function Clear-ChatMessageIdIndex {
-    # ë©”ì‹œì§€ ID ì¤‘ë³µ ì²´í¬ìš© ì¸ë±ìŠ¤ ì´ˆê¸°í™”
+    # ¸Ş½ÃÁö ID Áßº¹ Ã¼Å©¿ë ÀÎµ¦½º ÃÊ±âÈ­
     param(
         [string]$Md5,
         [string]$YearMonth
@@ -1166,7 +1166,7 @@ function Clear-ChatMessageIdIndex {
 }
 
 function ConvertTo-ChatMessageJsonLine {
-    # ë©”ì‹œì§€ â†’ JSONL í•œ ì¤„
+    # ¸Ş½ÃÁö ¡æ JSONL ÇÑ ÁÙ
     param(
         [Parameter(Mandatory = $true)]$Message
     )
@@ -1174,7 +1174,7 @@ function ConvertTo-ChatMessageJsonLine {
 }
 
 function Read-ChatMessagesJsonl {
-    # JSONL â†’ ë©”ì‹œì§€ ë°°ì—´. ê¹¨ì§„ ì¤„ì€ skip
+    # JSONL ¡æ ¸Ş½ÃÁö ¹è¿­. ±úÁø ÁÙÀº skip
     param(
         [Parameter(Mandatory = $true)][string]$Path
     )
@@ -1191,12 +1191,12 @@ function Read-ChatMessagesJsonl {
                 if ($null -ne $obj) { [void]$list.Add($obj) }
             }
             catch {
-                Write-AppLog -Level WARN -Message ("JSONL ì¤„ íŒŒì‹± ì‹¤íŒ¨: " + $Path)
+                Write-AppLog -Level WARN -Message ("JSONL ÁÙ ÆÄ½Ì ½ÇÆĞ: " + $Path)
             }
         }
     }
     catch {
-        Write-AppLog -Level ERROR -Message ("JSONL ì½ê¸° ì‹¤íŒ¨: " + $Path) -Exception $_.Exception
+        Write-AppLog -Level ERROR -Message ("JSONL ÀĞ±â ½ÇÆĞ: " + $Path) -Exception $_.Exception
         return @()
     }
     finally {
@@ -1206,7 +1206,7 @@ function Read-ChatMessagesJsonl {
 }
 
 function Write-ChatMessagesJsonl {
-    # ë©”ì‹œì§€ ë°°ì—´ ì „ì²´ â†’ JSONL (.tmp â†’ rename)
+    # ¸Ş½ÃÁö ¹è¿­ ÀüÃ¼ ¡æ JSONL (.tmp ¡æ rename)
     param(
         [Parameter(Mandatory = $true)][string]$Path,
         [Parameter(Mandatory = $true)]
@@ -1249,13 +1249,13 @@ function Write-ChatMessagesJsonl {
         if (Test-Path -LiteralPath $tmp) {
             Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
         }
-        Write-AppLog -Level ERROR -Message ("JSONL ì €ì¥ ì‹¤íŒ¨: " + $Path) -Exception $_.Exception
+        Write-AppLog -Level ERROR -Message ("JSONL ÀúÀå ½ÇÆĞ: " + $Path) -Exception $_.Exception
         throw
     }
 }
 
 function Append-ChatMessageJsonl {
-    # JSONL íŒŒì¼ ëì— ë©”ì‹œì§€ 1ê±´ append
+    # JSONL ÆÄÀÏ ³¡¿¡ ¸Ş½ÃÁö 1°Ç append
     param(
         [Parameter(Mandatory = $true)][string]$Path,
         [Parameter(Mandatory = $true)]$Message
@@ -1280,7 +1280,7 @@ function Append-ChatMessageJsonl {
 }
 
 function Import-LegacyChatMessages {
-    # êµ¬í˜• { messages: [] } JSON â†’ ë©”ì‹œì§€ ë°°ì—´
+    # ±¸Çü { messages: [] } JSON ¡æ ¸Ş½ÃÁö ¹è¿­
     param(
         [Parameter(Mandatory = $true)][string]$Path
     )
@@ -1305,7 +1305,7 @@ function Import-LegacyChatMessages {
 }
 
 function Convert-LegacyChatFileIfNeeded {
-    # êµ¬í˜• .json â†’ .jsonl ë§ˆì´ê·¸ë ˆì´ì…˜
+    # ±¸Çü .json ¡æ .jsonl ¸¶ÀÌ±×·¹ÀÌ¼Ç
     param(
         [Parameter(Mandatory = $true)][string]$Md5,
         [Parameter(Mandatory = $true)][string]$YearMonth
@@ -1325,18 +1325,18 @@ function Convert-LegacyChatFileIfNeeded {
             if (Test-Path -LiteralPath $bak) { Remove-Item -LiteralPath $bak -Force -ErrorAction SilentlyContinue }
             Move-Item -LiteralPath $legacy -Destination $bak -Force
         } catch {
-            # ì´ë™ ì‹¤íŒ¨í•´ë„ jsonlì´ ìˆìœ¼ë©´ ë™ì‘ ê°€ëŠ¥
+            # ÀÌµ¿ ½ÇÆĞÇØµµ jsonlÀÌ ÀÖÀ¸¸é µ¿ÀÛ °¡´É
         }
-        Write-AppLog -Level INFO -Message ("ì±„íŒ… íŒŒì¼ ë§ˆì´ê·¸ë ˆì´ì…˜: " + $legacy + " -> " + $jsonl + " (" + $msgs.Count + "ê±´)")
+        Write-AppLog -Level INFO -Message ("Ã¤ÆÃ ÆÄÀÏ ¸¶ÀÌ±×·¹ÀÌ¼Ç: " + $legacy + " -> " + $jsonl + " (" + $msgs.Count + "°Ç)")
         Clear-ChatMessageIdIndex -Md5 $Md5 -YearMonth $YearMonth
     }
     catch {
-        Write-AppLog -Level ERROR -Message ("ì±„íŒ… ë§ˆì´ê·¸ë ˆì´ì…˜ ì‹¤íŒ¨: " + $legacy) -Exception $_.Exception
+        Write-AppLog -Level ERROR -Message ("Ã¤ÆÃ ¸¶ÀÌ±×·¹ÀÌ¼Ç ½ÇÆĞ: " + $legacy) -Exception $_.Exception
     }
 }
 
 function Get-ChatMessageIdIndex {
-    # md5+ì›”ë³„ ë©”ì‹œì§€ ID ì¤‘ë³µ ì²´í¬ìš© HashSet. ì—†ìœ¼ë©´ ë””ìŠ¤í¬ì—ì„œ ë¹Œë“œ
+    # md5+¿ùº° ¸Ş½ÃÁö ID Áßº¹ Ã¼Å©¿ë HashSet. ¾øÀ¸¸é µğ½ºÅ©¿¡¼­ ºôµå
     param(
         [Parameter(Mandatory = $true)][string]$Md5,
         [Parameter(Mandatory = $true)][string]$YearMonth
@@ -1368,7 +1368,7 @@ function Get-ChatMessageIdIndex {
 }
 
 function Get-MessagePreviewText {
-    # ëŒ€í™” ëª©ë¡ìš© ë¯¸ë¦¬ë³´ê¸° í…ìŠ¤íŠ¸ (ì œëª© ë˜ëŠ” ë³¸ë¬¸ ì• 40ì)
+    # ´ëÈ­ ¸ñ·Ï¿ë ¹Ì¸®º¸±â ÅØ½ºÆ® (Á¦¸ñ ¶Ç´Â º»¹® ¾Õ 40ÀÚ)
     param(
         [Parameter(Mandatory = $true)]$Message,
         [int]$MaxLen = 40
@@ -1390,15 +1390,15 @@ function Get-MessagePreviewText {
         $preview = $title
     }
     elseif ($title -and $title.Length -ge 10 -and $body.StartsWith($title) -eq $false -and $title -ne $body) {
-        # ì œëª©ì´ ë³¸ë¬¸ ì²« 10ìì™€ ë‹¤ë¥´ë©´ ì œëª© ë¨¼ì € í‘œì‹œ
+        # Á¦¸ñÀÌ º»¹® Ã¹ 10ÀÚ¿Í ´Ù¸£¸é Á¦¸ñ ¸ÕÀú Ç¥½Ã
         if ($body.Length -gt 0 -and -not $body.StartsWith($title)) {
             $preview = $title
-            if ($body) { $preview = $title + ' Â· ' + $body }
+            if ($body) { $preview = $title + ' ¡¤ ' + $body }
         }
     }
 
     if ([string]::IsNullOrWhiteSpace($preview)) {
-        $preview = '(ë‚´ìš© ì—†ìŒ)'
+        $preview = '(³»¿ë ¾øÀ½)'
     }
     if ($preview.Length -gt $MaxLen) {
         $preview = $preview.Substring(0, $MaxLen) + '...'
@@ -1407,7 +1407,7 @@ function Get-MessagePreviewText {
 }
 
 function Get-RecentChatMessages {
-    # ìµœì‹  ì›”ë¶€í„° ì½ì–´ ìµœê·¼ $Takeê±´ë§Œ ë°˜í™˜ (ì „ì²´ ë¡œë“œ ë°©ì§€)
+    # ÃÖ½Å ¿ùºÎÅÍ ÀĞ¾î ÃÖ±Ù $Take°Ç¸¸ ¹İÈ¯ (ÀüÃ¼ ·Îµå ¹æÁö)
     param(
         [Parameter(Mandatory = $true)]
         [string]$Md5,
@@ -1423,7 +1423,7 @@ function Get-RecentChatMessages {
         $months = @((Get-Date -Format 'yyyyMM'))
     }
 
-    # ìµœì‹  ì›”ë¶€í„° ì²­í¬ë¥¼ ëª¨ì•„ì„œ ì‹œê°„ìˆœ flat í›„ tail
+    # ÃÖ½Å ¿ùºÎÅÍ Ã»Å©¸¦ ¸ğ¾Æ¼­ ½Ã°£¼ø flat ÈÄ tail
     $chunks = New-Object System.Collections.ArrayList
     $total = 0
     foreach ($ym in $months) {
@@ -1454,7 +1454,7 @@ function Get-RecentChatMessages {
 }
 
 function Get-ChatMessages {
-    # íŠ¹ì • md5 + ì›”ì˜ JSONL ë©”ì‹œì§€ ë°°ì—´
+    # Æ¯Á¤ md5 + ¿ùÀÇ JSONL ¸Ş½ÃÁö ¹è¿­
     param(
         [Parameter(Mandatory = $true)]
         [string]$Md5,
@@ -1473,7 +1473,7 @@ function Get-ChatMessages {
 
 
 function Add-ChatMessage {
-    # ì›”ë³„ JSONLì— append. ë™ì¼ note_id(aa)ëŠ” ë¬´ì‹œ
+    # ¿ùº° JSONL¿¡ append. µ¿ÀÏ note_id(aa)´Â ¹«½Ã
     param(
         [Parameter(Mandatory = $true)]
         [string]$Md5,
@@ -1500,7 +1500,7 @@ function Add-ChatMessage {
         Append-ChatMessageJsonl -Path $path -Message $Message
     }
     catch {
-        Write-AppLog -Level ERROR -Message "ë©”ì‹œì§€ append ì‹¤íŒ¨ md5=$Md5 ym=$YearMonth" -Exception $_.Exception
+        Write-AppLog -Level ERROR -Message "¸Ş½ÃÁö append ½ÇÆĞ md5=$Md5 ym=$YearMonth" -Exception $_.Exception
         return $false
     }
 
@@ -1511,7 +1511,7 @@ function Add-ChatMessage {
 }
 
 function Get-AvailableChatMonths {
-    # íŠ¹ì • md5ì˜ ì›” íŒŒì¼ ëª©ë¡ (ìµœì‹ ìˆœ)
+    # Æ¯Á¤ md5ÀÇ ¿ù ÆÄÀÏ ¸ñ·Ï (ÃÖ½Å¼ø)
     param(
         [Parameter(Mandatory = $true)]
         [string]$Md5
@@ -1536,7 +1536,7 @@ function Get-AvailableChatMonths {
 
 
 
-# ---- HTML â†” PlainText ë³€í™˜ ---------------------------------------------------
+# ---- HTML ¡ê PlainText º¯È¯ ---------------------------------------------------
 
 function ConvertTo-HtmlLineBreaks {
     param([string]$Text)
@@ -1565,14 +1565,14 @@ function ConvertFrom-HtmlToPlainText {
 
 # ---- ApiClient ---------------------------------------------------------------
 
-# 2008 R2ë„ TLS 1.2 ê°•ì œ
+# 2008 R2µµ TLS 1.2 °­Á¦
 try {
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 }
 catch { }
 
 function Initialize-ApiUrls {
-    # ApiBase + Path* â†’ ì ˆëŒ€ URL
+    # ApiBase + Path* ¡æ Àı´ë URL
     if ([string]::IsNullOrWhiteSpace($script:ApiBase)) {
         $script:LoginUrl = $null
         $script:GetUserListUrl = $null
@@ -1589,7 +1589,7 @@ function Initialize-ApiUrls {
 
 
 function Set-ApiReloginCallback {
-    # 401 ì‘ë‹µ ì‹œ í˜¸ì¶œí•  ì¬ë¡œê·¸ì¸ ì½œë°±
+    # 401 ÀÀ´ä ½Ã È£ÃâÇÒ Àç·Î±×ÀÎ Äİ¹é
     param(
         [Parameter(Mandatory = $true)]
         [scriptblock]$Callback
@@ -1599,7 +1599,7 @@ function Set-ApiReloginCallback {
 
 
 function Get-HttpResponseText {
-    # Invoke-WebRequest ì‘ë‹µ ë³¸ë¬¸ UTF-8 ë””ì½”ë”© (CP949 ê¹¨ì§ ë°©ì§€)
+    # Invoke-WebRequest ÀÀ´ä º»¹® UTF-8 µğÄÚµù (CP949 ±úÁü ¹æÁö)
     param($Response)
     try {
         if ($Response.RawContentStream -and $Response.RawContentStream.CanSeek) {
@@ -1614,7 +1614,7 @@ function Get-HttpResponseText {
     $content = $Response.Content
     if ([string]::IsNullOrEmpty($content)) { return $content }
 
-    # CP949ë¡œ ì˜ëª» ë””ì½”ë”©ëœ Content â†’ ë°”ì´íŠ¸ â†’ UTF-8 ì¬í•´ì„
+    # CP949·Î Àß¸ø µğÄÚµùµÈ Content ¡æ ¹ÙÀÌÆ® ¡æ UTF-8 ÀçÇØ¼®
     try {
         $bytes = [System.Text.Encoding]::Default.GetBytes($content)
         $utf8 = [System.Text.Encoding]::UTF8.GetString($bytes)
@@ -1629,7 +1629,7 @@ function Get-HttpResponseText {
 }
 
 function Invoke-ApiRequest {
-    # API ê³µí†µ í˜¸ì¶œ. ì¬ì‹œë„ + 401 ì¬ë¡œê·¸ì¸ ë‚´ì¥
+    # API °øÅë È£Ãâ. Àç½Ãµµ + 401 Àç·Î±×ÀÎ ³»Àå
     param(
         [Parameter(Mandatory = $true)]
         [string]$Uri,
@@ -1645,7 +1645,7 @@ function Invoke-ApiRequest {
     )
 
     if ([string]::IsNullOrWhiteSpace($Uri)) {
-        throw "API URI ê°€ ë¹„ì–´ ìˆìŠµë‹ˆë‹¤. ìƒë‹¨ ApiBase/Path ì„¤ì •ì„ í™•ì¸í•˜ì„¸ìš”."
+        throw "API URI °¡ ºñ¾î ÀÖ½À´Ï´Ù. »ó´Ü ApiBase/Path ¼³Á¤À» È®ÀÎÇÏ¼¼¿ä."
     }
 
     $attempt = 0
@@ -1658,7 +1658,7 @@ function Invoke-ApiRequest {
             $swApi = [System.Diagnostics.Stopwatch]::StartNew()
             $reqHeaders = @{}
             foreach ($k in $Headers.Keys) { $reqHeaders[$k] = $Headers[$k] }
-            # ORCA jqGridëŠ” AJAX í—¤ë” ì—†ìœ¼ë©´ 403 ë±‰ìŒ
+            # ORCA jqGrid´Â AJAX Çì´õ ¾øÀ¸¸é 403 ¹ñÀ½
             if (-not $reqHeaders.ContainsKey('X-Requested-With')) {
                 $reqHeaders['X-Requested-With'] = 'XMLHttpRequest'
             }
@@ -1686,7 +1686,7 @@ function Invoke-ApiRequest {
 
             Write-AppLog -Level DEBUG -Message "API $Method $Uri (try=$attempt, hasSession=$([bool]$script:HttpSession))"
 
-            # SessionVariable ëŒ€ì‹  WebSession ê°ì²´ ì‚¬ìš© (ì¶©ëŒ ë°©ì§€)
+            # SessionVariable ´ë½Å WebSession °´Ã¼ »ç¿ë (Ãæµ¹ ¹æÁö)
             if (-not $script:HttpSession) {
                 $script:HttpSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
             }
@@ -1701,17 +1701,17 @@ function Invoke-ApiRequest {
             $content = Get-HttpResponseText -Response $response
             if ([string]::IsNullOrWhiteSpace($content)) { return $null }
 
-            # ë¡œê·¸ì¸ì€ HTML ì‘ë‹µì´ ì •ìƒ. ê·¸ ì™¸ APIì—ì„œ HTML ì˜¤ë©´ ì„¸ì…˜ ë§Œë£Œ
+            # ·Î±×ÀÎÀº HTML ÀÀ´äÀÌ Á¤»ó. ±× ¿Ü API¿¡¼­ HTML ¿À¸é ¼¼¼Ç ¸¸·á
             $trim = $content.TrimStart()
             $looksHtml = ($trim.StartsWith('<') -or $trim -match '(?i)<!DOCTYPE|<html')
             if ($looksHtml) {
                 if ($SkipAuth) {
-                    Write-AppLog -Level INFO -Message "ë¡œê·¸ì¸ ì‘ë‹µ HTML ìˆ˜ì‹  (ì •ìƒ ê°€ëŠ¥)"
+                    Write-AppLog -Level INFO -Message "·Î±×ÀÎ ÀÀ´ä HTML ¼ö½Å (Á¤»ó °¡´É)"
                     return $content
                 }
                 $preview = $content.Substring(0, [Math]::Min(180, $content.Length)) -replace '\s+', ' '
-                Write-AppLog -Level ERROR -Message "API HTML ì‘ë‹µ(ì„¸ì…˜ ì˜ì‹¬): $Uri | $preview"
-                throw "APIê°€ HTMLì„ ë°˜í™˜í–ˆìŠµë‹ˆë‹¤(ì„¸ì…˜ ì—†ìŒ ê°€ëŠ¥). URI=$Uri"
+                Write-AppLog -Level ERROR -Message "API HTML ÀÀ´ä(¼¼¼Ç ÀÇ½É): $Uri | $preview"
+                throw "API°¡ HTMLÀ» ¹İÈ¯Çß½À´Ï´Ù(¼¼¼Ç ¾øÀ½ °¡´É). URI=$Uri"
             }
 
             try {
@@ -1720,8 +1720,8 @@ function Invoke-ApiRequest {
             catch {
                 if ($SkipAuth) { return $content }
                 $preview = $content.Substring(0, [Math]::Min(180, $content.Length)) -replace '\s+', ' '
-                Write-AppLog -Level ERROR -Message "JSON íŒŒì‹± ì‹¤íŒ¨ URI=$Uri | $preview"
-                throw "JSON íŒŒì‹± ì‹¤íŒ¨: $($_.Exception.Message)"
+                Write-AppLog -Level ERROR -Message "JSON ÆÄ½Ì ½ÇÆĞ URI=$Uri | $preview"
+                throw "JSON ÆÄ½Ì ½ÇÆĞ: $($_.Exception.Message)"
             }
         }
         catch {
@@ -1738,7 +1738,7 @@ function Invoke-ApiRequest {
                 }
             } catch { }
 
-            Write-AppLog -Level ERROR -Message "API ì‹¤íŒ¨ $Method $Uri status=$statusCode try=$attempt : $($_.Exception.Message)"
+            Write-AppLog -Level ERROR -Message "API ½ÇÆĞ $Method $Uri status=$statusCode try=$attempt : $($_.Exception.Message)"
 
             if ($statusCode -eq 401 -and -not $SkipAuth -and -not $reloginTried) {
                 $reloginTried = $true
@@ -1747,12 +1747,12 @@ function Invoke-ApiRequest {
                     try { $ok = [bool](& $script:ReloginCallback) } catch { $ok = $false }
                 }
                 if ($ok) { $attempt--; continue }
-                throw "ì¸ì¦ ì‹¤íŒ¨(401). ì¬ë¡œê·¸ì¸ ì‹¤íŒ¨."
+                throw "ÀÎÁõ ½ÇÆĞ(401). Àç·Î±×ÀÎ ½ÇÆĞ."
             }
 
             $retryable = $false
             if ($statusCode -ge 500 -and $statusCode -lt 600) { $retryable = $true }
-            if ($_.Exception.Message -match 'timeout|timed out|ì—°ê²°|connection|network') { $retryable = $true }
+            if ($_.Exception.Message -match 'timeout|timed out|¿¬°á|connection|network') { $retryable = $true }
             if (-not $statusCode -and $attempt -lt $script:MaxRetry) { $retryable = $true }
 
             if ($retryable -and $attempt -lt $script:MaxRetry) {
@@ -1765,10 +1765,10 @@ function Invoke-ApiRequest {
 }
 
 
-# ---- ë„ë©”ì¸ API ---------------------------------------------------------------
+# ---- µµ¸ŞÀÎ API ---------------------------------------------------------------
 
 function Invoke-ApiLogin {
-    # ORCA form POST ë¡œê·¸ì¸. ì„¸ì…˜ ì¿ í‚¤ ì»¨í…Œì´ë„ˆ ìƒì„±
+    # ORCA form POST ·Î±×ÀÎ. ¼¼¼Ç ÄíÅ° ÄÁÅ×ÀÌ³Ê »ı¼º
     param(
         [Parameter(Mandatory = $true)][string]$UserId,
         [Parameter(Mandatory = $true)][string]$Password
@@ -1782,17 +1782,17 @@ function Invoke-ApiLogin {
 
     $result = Invoke-ApiRequest -Uri $script:LoginUrl -Method POST -Body $body -BodyFormat Form -SkipAuth
 
-    # ORCA ë¡œê·¸ì¸ì€ HTML + ì¿ í‚¤. ì˜ˆì™¸ ì•ˆ ë‚¬ìœ¼ë©´ ì„±ê³µ
+    # ORCA ·Î±×ÀÎÀº HTML + ÄíÅ°. ¿¹¿Ü ¾È ³µÀ¸¸é ¼º°ø
     if (-not $script:HttpSession) {
         $script:HttpSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
     }
     Set-AuthToken -Token 'SESSION'
-    Write-AppLog -Level INFO -Message "ë¡œê·¸ì¸ ì„±ê³µ(ì„¸ì…˜): $UserId"
+    Write-AppLog -Level INFO -Message "·Î±×ÀÎ ¼º°ø(¼¼¼Ç): $UserId"
     return $result
 }
 
 function Get-ApiRows {
-    # jqGrid ì‘ë‹µì—ì„œ rows ë°°ì—´ ì¶”ì¶œ. í•­ìƒ Object[] ë°˜í™˜
+    # jqGrid ÀÀ´ä¿¡¼­ rows ¹è¿­ ÃßÃâ. Ç×»ó Object[] ¹İÈ¯
     param($Result)
     if ($null -eq $Result) { return , @() }
     if ($Result -is [System.Array]) { return , @($Result) }
@@ -1804,16 +1804,16 @@ function Get-ApiRows {
 }
 
 function Get-ApiUserList {
-    # ì‚¬ìš©ì ëª©ë¡ ì¡°íšŒ
-    Write-AppLog -Level INFO -Message "ì‚¬ìš©ìëª©ë¡ URI=$($script:GetUserListUrl)"
+    # »ç¿ëÀÚ ¸ñ·Ï Á¶È¸
+    Write-AppLog -Level INFO -Message "»ç¿ëÀÚ¸ñ·Ï URI=$($script:GetUserListUrl)"
     $result = Invoke-ApiRequest -Uri $script:GetUserListUrl -Method GET -BodyFormat None
     $rows = Get-ApiRows -Result $result
-    Write-AppLog -Level INFO -Message "ì‚¬ìš©ìëª©ë¡ rows=$($rows.Count)"
+    Write-AppLog -Level INFO -Message "»ç¿ëÀÚ¸ñ·Ï rows=$($rows.Count)"
     return $rows
 }
 
 function Get-ApiMessageList {
-    # ìª½ì§€ ëª©ë¡ ì¡°íšŒ. start_ymd ë¹ˆê°’=ì „ì²´, yyyyMMdd=ì¦ë¶„
+    # ÂÊÁö ¸ñ·Ï Á¶È¸. start_ymd ºó°ª=ÀüÃ¼, yyyyMMdd=ÁõºĞ
     param(
         [Parameter(Mandatory = $false)]
         [string]$StartYmd = ''
@@ -1823,15 +1823,15 @@ function Get-ApiMessageList {
     $base = $script:ApiBase.TrimEnd('/')
     $uri = $base + '/note/retrieveNoteListJson.do?start_ymd=' + [Uri]::EscapeDataString($ymd) + '&nd=&rows=9999&page=1'
 
-    Write-AppLog -Level DEBUG -Message "ìª½ì§€ëª©ë¡ URI=$uri"
+    Write-AppLog -Level DEBUG -Message "ÂÊÁö¸ñ·Ï URI=$uri"
     $result = Invoke-ApiRequest -Uri $uri -Method GET -BodyFormat None
     $rows = Get-ApiRows -Result $result
-    Write-AppLog -Level DEBUG -Message ("ìª½ì§€ëª©ë¡ rows=" + @($rows).Count)
+    Write-AppLog -Level DEBUG -Message ("ÂÊÁö¸ñ·Ï rows=" + @($rows).Count)
     return $rows
 }
 
 function Send-ApiMessage {
-    # ìª½ì§€ ì „ì†¡. note_id ì•ˆ ë‚´ë ¤ì¤Œ â†’ í´ë§ì—ì„œ í™•ì¸
+    # ÂÊÁö Àü¼Û. note_id ¾È ³»·ÁÁÜ ¡æ Æú¸µ¿¡¼­ È®ÀÎ
     param(
         [Parameter(Mandatory = $true)][string[]]$ReceiverIds,
         [Parameter(Mandatory = $false)][string[]]$ReceiverNames = @(),
@@ -1839,7 +1839,7 @@ function Send-ApiMessage {
     )
 
     $ids = @($ReceiverIds | Where-Object { $_ })
-    if ($ids.Count -eq 0) { throw 'ìˆ˜ì‹ ìê°€ ì—†ìŠµë‹ˆë‹¤.' }
+    if ($ids.Count -eq 0) { throw '¼ö½ÅÀÚ°¡ ¾ø½À´Ï´Ù.' }
 
     $nameList = New-Object System.Collections.ArrayList
     for ($i = 0; $i -lt @($ids).Count; $i++) {
@@ -1857,7 +1857,7 @@ function Send-ApiMessage {
         if ($names.Count -eq 1) { $names[0] } else { '' }
     }
     else {
-        '{0} ì™¸ {1}ëª…' -f $names[0], ($names.Count - 1)
+        '{0} ¿Ü {1}¸í' -f $names[0], ($names.Count - 1)
     }
 
     $plain = $BodyText.Trim()
@@ -1873,25 +1873,25 @@ function Send-ApiMessage {
     $body['receiver_list'] = ($ids -join ',')
     $body['receiver_cnt']  = $ids.Count
     $body['contents'] = $html
-    # ORCA form ì „ì†¡ ì‹œ ë¹ˆ files[] í•„ë“œ í•„ìš”
+    # ORCA form Àü¼Û ½Ã ºó files[] ÇÊµå ÇÊ¿ä
     $body['files[]'] = ''
 
     $result = Invoke-ApiRequest -Uri $script:SendMessageUrl -Method POST -Body $body -BodyFormat Form
 
     $code = Get-ObjectProperty -Object $result -Name 'rsltcode'
     if ($code -and ([string]$code -ne 'success')) {
-        throw "ì „ì†¡ ì‹¤íŒ¨ rsltcode=$code"
+        throw "Àü¼Û ½ÇÆĞ rsltcode=$code"
     }
 
-    Write-AppLog -Level INFO -Message "ë©”ì‹œì§€ ì „ì†¡ ì™„ë£Œ receivers=$($ids -join ',')"
+    Write-AppLog -Level INFO -Message "¸Ş½ÃÁö Àü¼Û ¿Ï·á receivers=$($ids -join ',')"
     return $result
 }
 
 
-# ---- ë©”ì‹œì§€ ì •ê·œí™” (ìŠ¤í‚¤ë§ˆ aa~ai) ---------------------------------------------
+# ---- ¸Ş½ÃÁö Á¤±ÔÈ­ (½ºÅ°¸¶ aa~ai) ---------------------------------------------
 
 function Get-ObjectProperty {
-    # StrictMode ì•ˆì „ ì†ì„± ì½ê¸°
+    # StrictMode ¾ÈÀü ¼Ó¼º ÀĞ±â
     param(
         $Object,
         [Parameter(Mandatory = $true)]
@@ -1909,7 +1909,7 @@ function Get-ObjectProperty {
 }
 
 function ConvertTo-NormalizedMessage {
-    # ORCA ìª½ì§€ row â†’ ë‚´ë¶€ aa~ai ìŠ¤í‚¤ë§ˆ
+    # ORCA ÂÊÁö row ¡æ ³»ºÎ aa~ai ½ºÅ°¸¶
     param(
         [Parameter(Mandatory = $true)]$Raw,
         [Parameter(Mandatory = $true)][string]$CurrentUserId
@@ -1955,7 +1955,7 @@ function ConvertTo-NormalizedMessage {
         $aeStr = (Get-Date).ToString('o')
     }
 
-    # subjectê°€ ë³¸ë¬¸ ì• 10ìì™€ ê°™ìœ¼ë©´ ì œëª© í•„ë“œ ë¹„ì›€
+    # subject°¡ º»¹® ¾Õ 10ÀÚ¿Í °°À¸¸é Á¦¸ñ ÇÊµå ºñ¿ò
     $plain = ConvertFrom-HtmlToPlainText -Html $ah
     $plainOneLine = ($plain -replace '\s+', ' ').Trim()
     $titleUse = $ad
@@ -1983,7 +1983,7 @@ function ConvertTo-NormalizedMessage {
 }
 
 function Get-ConversationListTitle {
-    # ëŒ€í™”ëª©ë¡ í‘œì‹œëª…. receiverê°€ 'ë‚˜'/'ë‚˜ ì™¸ Nëª…'ì´ë©´ ë³´ë‚¸ ì‚¬ëŒ ì´ë¦„
+    # ´ëÈ­¸ñ·Ï Ç¥½Ã¸í. receiver°¡ '³ª'/'³ª ¿Ü N¸í'ÀÌ¸é º¸³½ »ç¶÷ ÀÌ¸§
     param(
         [string]$ReceiverLabel,
         [string]$SenderName
@@ -1997,10 +1997,10 @@ function Get-ConversationListTitle {
     }
 
     $isMeSide = $false
-    if ($recv -eq 'ë‚˜') { $isMeSide = $true }
+    if ($recv -eq '³ª') { $isMeSide = $true }
     if ($my -and ($recv -eq $my)) { $isMeSide = $true }
-    if ($recv -match '^ë‚˜\s*ì™¸\s*\d+\s*ëª…$') { $isMeSide = $true }
-    if ($my -and ($recv -match ('^{0}\s*ì™¸\s*\d+\s*ëª…$' -f [regex]::Escape($my)))) {
+    if ($recv -match '^³ª\s*¿Ü\s*\d+\s*¸í$') { $isMeSide = $true }
+    if ($my -and ($recv -match ('^{0}\s*¿Ü\s*\d+\s*¸í$' -f [regex]::Escape($my)))) {
         $isMeSide = $true
     }
 
@@ -2012,7 +2012,7 @@ function Get-ConversationListTitle {
 }
 
 function Resolve-MessageConversationKey {
-    # ì†¡ì‹ ì + ìˆ˜ì‹ ì ì§‘í•© â†’ MD5 ëŒ€í™” í‚¤
+    # ¼Û½ÅÀÚ + ¼ö½ÅÀÚ ÁıÇÕ ¡æ MD5 ´ëÈ­ Å°
     param(
         [Parameter(Mandatory = $true)]$Message,
         [Parameter(Mandatory = $true)][string]$CurrentUserId
@@ -2043,7 +2043,7 @@ function Resolve-MessageConversationKey {
 # ---- ListView ----------------------------------------------------------------
 
 function Initialize-ConversationListView {
-    # ëŒ€í™” ëª©ë¡ ListView ì»¬ëŸ¼ ì„¤ì •
+    # ´ëÈ­ ¸ñ·Ï ListView ÄÃ·³ ¼³Á¤
     param(
         [Parameter(Mandatory = $true)]
         [System.Windows.Forms.ListView]$ListView
@@ -2055,10 +2055,10 @@ function Initialize-ConversationListView {
     $ListView.HideSelection = $false
     $ListView.GridLines = $true
     $ListView.Columns.Clear()
-    [void]$ListView.Columns.Add('ëŒ€í™”', 140)
-    [void]$ListView.Columns.Add('ë¯¸ë¦¬ë³´ê¸°', 150)
-    [void]$ListView.Columns.Add('ì‹œê°„', 120)
-    [void]$ListView.Columns.Add('ë¯¸í™•ì¸', 55)
+    [void]$ListView.Columns.Add('´ëÈ­', 140)
+    [void]$ListView.Columns.Add('¹Ì¸®º¸±â', 150)
+    [void]$ListView.Columns.Add('½Ã°£', 120)
+    [void]$ListView.Columns.Add('¹ÌÈ®ÀÎ', 55)
 }
 
 
@@ -2098,7 +2098,7 @@ function Set-ConversationListViewRow {
 
 
 function Update-ConversationListView {
-    # ëŒ€í™” ëª©ë¡ ListView ê°±ì‹ . ìˆœì„œ ê°™ìœ¼ë©´ í–‰ ë‚´ìš©ë§Œ ì—…ë°ì´íŠ¸
+    # ´ëÈ­ ¸ñ·Ï ListView °»½Å. ¼ø¼­ °°À¸¸é Çà ³»¿ë¸¸ ¾÷µ¥ÀÌÆ®
     param(
         [Parameter(Mandatory = $true)]
         [System.Windows.Forms.ListView]$ListView,
@@ -2179,7 +2179,7 @@ function Update-ConversationListView {
 }
 
 function Get-ConversationDisplayTitle {
-    # ëŒ€í™” í‘œì‹œ ì œëª©. customTitle ìš°ì„ , ì—†ìœ¼ë©´ ì°¸ê°€ì ì´ë¦„ (ë³¸ì¸ ì œì™¸)
+    # ´ëÈ­ Ç¥½Ã Á¦¸ñ. customTitle ¿ì¼±, ¾øÀ¸¸é Âü°¡ÀÚ ÀÌ¸§ (º»ÀÎ Á¦¿Ü)
     param(
         $Conversation,
         [string]$CurrentUserId = ''
@@ -2218,7 +2218,7 @@ function Get-ConversationDisplayTitle {
 }
 
 function Initialize-UserListView {
-    # ì‚¬ìš©ì ëª©ë¡ ListView. í–‰ ì„ íƒ ì‹œ ì²´í¬ë°•ìŠ¤ ì—°ë™
+    # »ç¿ëÀÚ ¸ñ·Ï ListView. Çà ¼±ÅÃ ½Ã Ã¼Å©¹Ú½º ¿¬µ¿
     param(
         [Parameter(Mandatory = $true)]
         [System.Windows.Forms.ListView]$ListView
@@ -2231,10 +2231,10 @@ function Initialize-UserListView {
     $ListView.HideSelection = $false
     $ListView.GridLines = $true
     $ListView.Columns.Clear()
-    [void]$ListView.Columns.Add('ì´ë¦„', 100)
-    [void]$ListView.Columns.Add('ì†Œì†', 100)
+    [void]$ListView.Columns.Add('ÀÌ¸§', 100)
+    [void]$ListView.Columns.Add('¼Ò¼Ó', 100)
     [void]$ListView.Columns.Add('ID', 90)
-    [void]$ListView.Columns.Add('ë¡¤', 120)
+    [void]$ListView.Columns.Add('·Ñ', 120)
 
     $ListView.Add_ItemSelectionChanged({
         param($sender, $e)
@@ -2248,7 +2248,7 @@ function Initialize-UserListView {
 }
 
 function Update-UserListView {
-    # users ë°°ì—´ë¡œ ListView ê°±ì‹ 
+    # users ¹è¿­·Î ListView °»½Å
     param(
         [Parameter(Mandatory = $true)]
         [System.Windows.Forms.ListView]$ListView,
@@ -2282,7 +2282,7 @@ function Update-UserListView {
 }
 
 function Get-CheckedUserIds {
-    # ì²´í¬ëœ ì‚¬ìš©ì ID ë°°ì—´
+    # Ã¼Å©µÈ »ç¿ëÀÚ ID ¹è¿­
     param(
         [Parameter(Mandatory = $true)]
         [System.Windows.Forms.ListView]$ListView
@@ -2296,7 +2296,7 @@ function Get-CheckedUserIds {
 }
 
 
-# ---- WebBrowser ë©”ì‹œì§€ í‘œì‹œ ---------------------------------------------------
+# ---- WebBrowser ¸Ş½ÃÁö Ç¥½Ã ---------------------------------------------------
 
 function Format-MessageDateTime {
     # YYYY-MM-DD HH:mm:ss
@@ -2317,18 +2317,18 @@ function Format-MessageDateTime {
 
 
 function Get-ChatMessagesHtml {
-    # ë©”ì‹œì§€ ë°°ì—´ â†’ WebBrowser í‘œì‹œìš© HTML
+    # ¸Ş½ÃÁö ¹è¿­ ¡æ WebBrowser Ç¥½Ã¿ë HTML
     param(
         [Parameter(Mandatory = $true)]
         [AllowEmptyCollection()]
         [array]$Messages,
 
-        [string]$Title = 'ëŒ€í™”'
+        [string]$Title = '´ëÈ­'
     )
 
     $sb = New-Object System.Text.StringBuilder
     [void]$sb.AppendLine('<!DOCTYPE html><html><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=Edge"><style>')
-    [void]$sb.AppendLine('body{font-family:"ë§‘ì€ ê³ ë”•","Malgun Gothic",sans-serif;font-size:13px;background:#ECEEF1;color:#1E1E1E;margin:8px;padding-bottom:100px;word-break:break-all;}')
+    [void]$sb.AppendLine('body{font-family:"¸¼Àº °íµñ","Malgun Gothic",sans-serif;font-size:13px;background:#ECEEF1;color:#1E1E1E;margin:8px;padding-bottom:100px;word-break:break-all;}')
     [void]$sb.AppendLine('.msg{margin:4px 0;padding:6px 10px;border-radius:8px;max-width:85%;}')
     [void]$sb.AppendLine('.msg.own{margin-left:auto;background:#D1E4FF;text-align:right;}')
     [void]$sb.AppendLine('.msg.other{margin-right:auto;background:#FFFFFF;text-align:left;}')
@@ -2341,7 +2341,7 @@ function Get-ChatMessagesHtml {
     [void]$sb.AppendLine('</head><body>')
 
     if ($Messages.Count -eq 0) {
-        [void]$sb.AppendLine('<div style="text-align:center;color:#888;margin-top:40px;">ëŒ€í™”ê°€ ì—†ìŠµë‹ˆë‹¤</div>')
+        [void]$sb.AppendLine('<div style="text-align:center;color:#888;margin-top:40px;">´ëÈ­°¡ ¾ø½À´Ï´Ù</div>')
     }
     else {
         $idx = 0
@@ -2349,7 +2349,7 @@ function Get-ChatMessagesHtml {
             if ($null -eq $m) { $idx++; continue }
             $isOwn = [bool]$m.isOwn
             $cssClass = if ($isOwn) { 'own' } else { 'other' }
-            $namePart = if ($isOwn) { 'ë‚˜' } else { if ($m.ac) { [string]$m.ac } else { 'ìƒëŒ€' } }
+            $namePart = if ($isOwn) { '³ª' } else { if ($m.ac) { [string]$m.ac } else { '»ó´ë' } }
             $timeStr = Format-MessageDateTime -Value $m.ae
             $body = ConvertFrom-HtmlToPlainText -Html ([string]$m.ah)
             if ([string]::IsNullOrWhiteSpace($body)) { $body = ' ' }
@@ -2363,7 +2363,7 @@ function Get-ChatMessagesHtml {
             }
 
             [void]$sb.Append("<div class='msg $cssClass'>")
-            [void]$sb.Append("<div class='meta'>$([System.Security.SecurityElement]::Escape($namePart))  Â·  $([System.Security.SecurityElement]::Escape($timeStr))</div>")
+            [void]$sb.Append("<div class='meta'>$([System.Security.SecurityElement]::Escape($namePart))  ¡¤  $([System.Security.SecurityElement]::Escape($timeStr))</div>")
             if ($title) {
                 [void]$sb.Append("<div class='title'>$([System.Security.SecurityElement]::Escape($title))</div>")
             }
@@ -2379,7 +2379,7 @@ function Get-ChatMessagesHtml {
 }
 
 function Add-ChatMessageToView {
-    # WebBrowserì— ë©”ì‹œì§€ ë²„ë¸” í•˜ë‚˜ append
+    # WebBrowser¿¡ ¸Ş½ÃÁö ¹öºí ÇÏ³ª append
     param(
         [Parameter(Mandatory = $true)]
         $WebBrowser,
@@ -2397,7 +2397,7 @@ function Add-ChatMessageToView {
 
         $isOwn = [bool]$Message.isOwn
         $cssClass = if ($isOwn) { 'own' } else { 'other' }
-        $namePart = if ($isOwn) { 'ë‚˜' } else { if ($Message.ac) { [string]$Message.ac } else { 'ìƒëŒ€' } }
+        $namePart = if ($isOwn) { '³ª' } else { if ($Message.ac) { [string]$Message.ac } else { '»ó´ë' } }
         $timeStr = Format-MessageDateTime -Value $Message.ae
         $body = ConvertFrom-HtmlToPlainText -Html ([string]$Message.ah)
         if ([string]::IsNullOrWhiteSpace($body)) { $body = ' ' }
@@ -2412,7 +2412,7 @@ function Add-ChatMessageToView {
 
         $sb = New-Object System.Text.StringBuilder
         [void]$sb.Append("<div class='msg $cssClass'>")
-        [void]$sb.Append("<div class='meta'>$([System.Security.SecurityElement]::Escape($namePart))  Â·  $([System.Security.SecurityElement]::Escape($timeStr))</div>")
+        [void]$sb.Append("<div class='meta'>$([System.Security.SecurityElement]::Escape($namePart))  ¡¤  $([System.Security.SecurityElement]::Escape($timeStr))</div>")
         if ($title) {
             [void]$sb.Append("<div class='title'>$([System.Security.SecurityElement]::Escape($title))</div>")
         }
@@ -2428,13 +2428,13 @@ function Add-ChatMessageToView {
         }
     }
     catch {
-        # Document ì—†ëŠ” ì´ˆê¸° ìƒíƒœ â†’ ì „ì²´ HTML ì¬ì„¤ì •
+        # Document ¾ø´Â ÃÊ±â »óÅÂ ¡æ ÀüÃ¼ HTML Àç¼³Á¤
         $WebBrowser.DocumentText = (Get-ChatMessagesHtml -Messages @($script:ChatLoadedMessages + @($Message)))
     }
 }
 
 function Show-ChatMessages {
-    # ë©”ì‹œì§€ ë°°ì—´ ì „ì²´ë¥¼ WebBrowserì— í‘œì‹œ
+    # ¸Ş½ÃÁö ¹è¿­ ÀüÃ¼¸¦ WebBrowser¿¡ Ç¥½Ã
     param(
         [Parameter(Mandatory = $true)]
         $WebBrowser,
@@ -2449,10 +2449,10 @@ function Show-ChatMessages {
 }
 
 
-# ---- MessageBox ìœ í‹¸ ----------------------------------------------------------
+# ---- MessageBox À¯Æ¿ ----------------------------------------------------------
 
 function Show-InfoMessage {
-    param([string]$Text, [string]$Title = 'ì•Œë¦¼')
+    param([string]$Text, [string]$Title = '¾Ë¸²')
     [System.Windows.Forms.MessageBox]::Show(
         $Text, $Title,
         [System.Windows.Forms.MessageBoxButtons]::OK,
@@ -2461,7 +2461,7 @@ function Show-InfoMessage {
 }
 
 function Show-ErrorMessage {
-    param([string]$Text, [string]$Title = 'ì˜¤ë¥˜')
+    param([string]$Text, [string]$Title = '¿À·ù')
     [System.Windows.Forms.MessageBox]::Show(
         $Text, $Title,
         [System.Windows.Forms.MessageBoxButtons]::OK,
@@ -2470,7 +2470,7 @@ function Show-ErrorMessage {
 }
 
 function Show-ConfirmDialog {
-    param([string]$Text, [string]$Title = 'í™•ì¸')
+    param([string]$Text, [string]$Title = 'È®ÀÎ')
     $r = [System.Windows.Forms.MessageBox]::Show(
         $Text, $Title,
         [System.Windows.Forms.MessageBoxButtons]::YesNo,
@@ -2481,7 +2481,7 @@ function Show-ConfirmDialog {
 
 
 
-# ---- ì•± ë³¸ì²´ ------------------------------------------------------------------
+# ---- ¾Û º»Ã¼ ------------------------------------------------------------------
 $script:AppRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 if (-not $script:AppRoot) { $script:AppRoot = (Get-Location).Path }
 
@@ -2491,9 +2491,9 @@ $script:ConfigPath = $null
 $script:LogsDir    = Join-Path $script:AppRoot 'logs'
 $script:ChatsDir   = Join-Path $script:DataDir 'chats'
 
-# ëª¨ë“ˆì€ ì´ íŒŒì¼ ìƒë‹¨ì— ì¸ë¼ì¸ (ë‹¨ì¼ íŒŒì¼)
+# ¸ğµâÀº ÀÌ ÆÄÀÏ »ó´Ü¿¡ ÀÎ¶óÀÎ (´ÜÀÏ ÆÄÀÏ)
 
-# ---- ì „ì—­ ìƒíƒœ -----------------------------------------------------------------
+# ---- Àü¿ª »óÅÂ -----------------------------------------------------------------
 $script:CurrentUserId       = $null
 $script:CurrentUserName     = $null
 $script:CurrentChatMD5      = $null
@@ -2505,7 +2505,7 @@ $script:PollIntervalMs      = 10000
 $script:IsExiting           = $false
 $script:AppContext          = $null
 
-# UI ì»¨íŠ¸ë¡¤ ì°¸ì¡°
+# UI ÄÁÆ®·Ñ ÂüÁ¶
 $script:MainForm            = $null
 $script:ChatForm            = $null
 $script:NotifyIcon          = $null
@@ -2543,7 +2543,7 @@ $script:PollBgContext        = $null
 $script:PollPsHandle         = $null
 $script:PollPsInstance       = $null
 
-# ì¸ë©”ëª¨ë¦¬ ìŠ¤í† ì–´ / dirty
+# ÀÎ¸Ş¸ğ¸® ½ºÅä¾î / dirty
 $script:UserById            = $null
 $script:ConvByMd5           = $null
 $script:ConvOrder           = $null
@@ -2560,9 +2560,9 @@ $script:ChatFontBody        = $null
 $script:ChatFontTitle       = $null
 $script:StateLock           = New-Object System.Object
 
-# -- 1. ì•± ì´ˆê¸°í™” ---------------------------------------------------------------
+# -- 1. ¾Û ÃÊ±âÈ­ ---------------------------------------------------------------
 function Initialize-Application {
-    # í´ë” ìƒì„±, ëª¨ë“ˆ ì´ˆê¸°í™”, ACL, API URL ê³„ì‚°
+    # Æú´õ »ı¼º, ¸ğµâ ÃÊ±âÈ­, ACL, API URL °è»ê
     foreach ($dir in @($script:DataDir, $script:LogsDir, $script:ChatsDir)) {
         if (-not (Test-Path -LiteralPath $dir)) {
             New-Item -ItemType Directory -Path $dir -Force | Out-Null
@@ -2570,7 +2570,7 @@ function Initialize-Application {
     }
 
     Initialize-AppLogger -LogDirectory $script:LogsDir
-    Write-AppLog -Level INFO -Message "===== InternalChat ì‹œì‘ ====="
+    Write-AppLog -Level INFO -Message "===== InternalChat ½ÃÀÛ ====="
     Write-AppLog -Level INFO -Message "AppRoot=$($script:AppRoot)"
 
     Initialize-SecurityModule -DataDirectory $script:DataDir
@@ -2579,7 +2579,7 @@ function Initialize-Application {
 
     $script:ConfigPath = Join-Path $script:DataDir 'config.json'
     Import-ApiBaseFromConfig
-    # í´ë§/ì•Œë¦¼ ê³ ì • (ì„¤ì • ë¬´ì‹œ)
+    # Æú¸µ/¾Ë¸² °íÁ¤ (¼³Á¤ ¹«½Ã)
     $script:PollIntervalMs = 10000
     $script:BalloonWhenChatHidden = $true
     $script:BalloonOtherChat = $true
@@ -2589,7 +2589,7 @@ function Initialize-Application {
     Write-AppLog -Level INFO -Message "URL Users=$($script:GetUserListUrl)"
     Write-AppLog -Level INFO -Message "URL Notes base=$($script:ApiBase)/note/..."
 
-    # 401 â†’ ì¬ë¡œê·¸ì¸ ì½œë°±
+    # 401 ¡æ Àç·Î±×ÀÎ Äİ¹é
     Set-ApiReloginCallback -Callback {
         try {
             $cred = Get-UserCredential
@@ -2598,21 +2598,21 @@ function Initialize-Application {
             return ($null -ne (Get-AuthToken))
         }
         catch {
-            Write-AppLog -Level ERROR -Message "ì¬ë¡œê·¸ì¸ ì‹¤íŒ¨" -Exception $_.Exception
+            Write-AppLog -Level ERROR -Message "Àç·Î±×ÀÎ ½ÇÆĞ" -Exception $_.Exception
             return $false
         }
     }
 }
 
-# -- 2. ë¡œê·¸ì¸ ------------------------------------------------------------------
+# -- 2. ·Î±×ÀÎ ------------------------------------------------------------------
 function Show-LoginDialogInputBox {
-    # InputBox 3ë‹¨ê³„ ë¡œê·¸ì¸ (WinForms ëª¨ë‹¬ì´ ì•ˆ ëœ¨ëŠ” í™˜ê²½ ëŒ€ë¹„)
+    # InputBox 3´Ü°è ·Î±×ÀÎ (WinForms ¸ğ´ŞÀÌ ¾È ¶ß´Â È¯°æ ´ëºñ)
     param(
         [string]$DefaultUserId = '',
         [string]$DefaultApiBase = ''
     )
     try { Add-Type -AssemblyName Microsoft.VisualBasic -ErrorAction Stop } catch {
-        Write-AppLog -Level ERROR -Message "VisualBasic ì–´ì…ˆë¸”ë¦¬ ë¡œë“œ ì‹¤íŒ¨" -Exception $_.Exception
+        Write-AppLog -Level ERROR -Message "VisualBasic ¾î¼Àºí¸® ·Îµå ½ÇÆĞ" -Exception $_.Exception
         return $null
     }
 
@@ -2622,36 +2622,36 @@ function Show-LoginDialogInputBox {
         [string]$script:ApiBase
     }
 
-    Write-AppLog -Level INFO -Message "ë¡œê·¸ì¸ InputBox í´ë°± í‘œì‹œ"
+    Write-AppLog -Level INFO -Message "·Î±×ÀÎ InputBox Æú¹é Ç¥½Ã"
     $api = [Microsoft.VisualBasic.Interaction]::InputBox(
-        'ì„œë²„ ì£¼ì†Œ (ì˜ˆ: http://host:9080/orca)',
-        'InternalChat ë¡œê·¸ì¸ - ì„œë²„',
+        '¼­¹ö ÁÖ¼Ò (¿¹: http://host:9080/orca)',
+        'InternalChat ·Î±×ÀÎ - ¼­¹ö',
         $defBase
     )
     if ([string]::IsNullOrWhiteSpace($api)) {
-        Write-AppLog -Level INFO -Message "ë¡œê·¸ì¸ InputBox ì„œë²„ ì·¨ì†Œ"
+        Write-AppLog -Level INFO -Message "·Î±×ÀÎ InputBox ¼­¹ö Ãë¼Ò"
         return $null
     }
     $api = $api.Trim().TrimEnd('/')
     if ($api -notmatch '^https?://') {
         [System.Windows.Forms.MessageBox]::Show(
-            'ì„œë²„ ì£¼ì†ŒëŠ” http:// ë˜ëŠ” https:// ë¡œ ì‹œì‘í•´ì•¼ í•©ë‹ˆë‹¤.',
-            'ë¡œê·¸ì¸',
+            '¼­¹ö ÁÖ¼Ò´Â http:// ¶Ç´Â https:// ·Î ½ÃÀÛÇØ¾ß ÇÕ´Ï´Ù.',
+            '·Î±×ÀÎ',
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Warning
         ) | Out-Null
         return $null
     }
 
-    $uid = [Microsoft.VisualBasic.Interaction]::InputBox('ì‚¬ìš©ì ID', 'InternalChat ë¡œê·¸ì¸ - ID', $DefaultUserId)
+    $uid = [Microsoft.VisualBasic.Interaction]::InputBox('»ç¿ëÀÚ ID', 'InternalChat ·Î±×ÀÎ - ID', $DefaultUserId)
     if ([string]::IsNullOrWhiteSpace($uid)) {
-        Write-AppLog -Level INFO -Message "ë¡œê·¸ì¸ InputBox ID ì·¨ì†Œ"
+        Write-AppLog -Level INFO -Message "·Î±×ÀÎ InputBox ID Ãë¼Ò"
         return $null
     }
 
-    $pw = [Microsoft.VisualBasic.Interaction]::InputBox('ë¹„ë°€ë²ˆí˜¸', 'InternalChat ë¡œê·¸ì¸ - ë¹„ë°€ë²ˆí˜¸', '')
+    $pw = [Microsoft.VisualBasic.Interaction]::InputBox('ºñ¹Ğ¹øÈ£', 'InternalChat ·Î±×ÀÎ - ºñ¹Ğ¹øÈ£', '')
     if ([string]::IsNullOrWhiteSpace($pw)) {
-        Write-AppLog -Level INFO -Message "ë¡œê·¸ì¸ InputBox PW ì·¨ì†Œ"
+        Write-AppLog -Level INFO -Message "·Î±×ÀÎ InputBox PW Ãë¼Ò"
         return $null
     }
 
@@ -2663,31 +2663,31 @@ function Show-LoginDialogInputBox {
 }
 
 function Show-LoginDialog {
-    # ì„œë²„/ID/PW ì…ë ¥. InputBox ê¸°ë³¸ ì‚¬ìš©
+    # ¼­¹ö/ID/PW ÀÔ·Â. InputBox ±âº» »ç¿ë
     param(
         [string]$DefaultUserId = '',
         [string]$DefaultApiBase = ''
     )
 
-    # WinForms ëª¨ë‹¬ì´ íŠ¹ì • í™˜ê²½ì—ì„œ ì¦‰ì‹œ ë‹«íˆëŠ” ë¬¸ì œ â†’ InputBox ìš°ì„ 
-    Write-AppLog -Level INFO -Message "ë¡œê·¸ì¸ ì…ë ¥ ì‹œì‘ (InputBox ìš°ì„ )"
+    # WinForms ¸ğ´ŞÀÌ Æ¯Á¤ È¯°æ¿¡¼­ Áï½Ã ´İÈ÷´Â ¹®Á¦ ¡æ InputBox ¿ì¼±
+    Write-AppLog -Level INFO -Message "·Î±×ÀÎ ÀÔ·Â ½ÃÀÛ (InputBox ¿ì¼±)"
     $cred = Show-LoginDialogInputBox -DefaultUserId $DefaultUserId -DefaultApiBase $DefaultApiBase
     if ($cred) {
-        Write-AppLog -Level INFO -Message ("ë¡œê·¸ì¸ ì…ë ¥ ì™„ë£Œ user=" + $cred.UserId)
+        Write-AppLog -Level INFO -Message ("·Î±×ÀÎ ÀÔ·Â ¿Ï·á user=" + $cred.UserId)
     } else {
-        Write-AppLog -Level INFO -Message "ë¡œê·¸ì¸ ì…ë ¥ ì·¨ì†Œ"
+        Write-AppLog -Level INFO -Message "·Î±×ÀÎ ÀÔ·Â Ãë¼Ò"
     }
     return $cred
 }
 
 function Start-UserLogin {
-    # ì €ì¥ëœ credentialë¡œ ìë™ ë¡œê·¸ì¸. ì—†ìœ¼ë©´ ë‹¤ì´ì–¼ë¡œê·¸
+    # ÀúÀåµÈ credential·Î ÀÚµ¿ ·Î±×ÀÎ. ¾øÀ¸¸é ´ÙÀÌ¾ó·Î±×
     Import-ApiBaseFromConfig
 
     $cred = Get-UserCredential
     if ($cred) {
         if ([string]::IsNullOrWhiteSpace([string]$cred.UserId) -or [string]::IsNullOrWhiteSpace([string]$cred.Password)) {
-            Write-AppLog -Level WARN -Message "ì €ì¥ëœ ìê²© ì¦ëª…ì´ ë¹„ì–´ ìˆìŒ - ì¬ì…ë ¥"
+            Write-AppLog -Level WARN -Message "ÀúÀåµÈ ÀÚ°İ Áõ¸íÀÌ ºñ¾î ÀÖÀ½ - ÀçÀÔ·Â"
             $cred = $null
         }
     }
@@ -2695,12 +2695,12 @@ function Start-UserLogin {
     if (-not $cred) {
         $cred = Show-LoginDialog -DefaultApiBase $script:ApiBase
         if (-not $cred) {
-            Write-AppLog -Level INFO -Message "ë¡œê·¸ì¸ ì·¨ì†Œ (ì°½ ë‹«í˜ ë˜ëŠ” ì·¨ì†Œ)"
+            Write-AppLog -Level INFO -Message "·Î±×ÀÎ Ãë¼Ò (Ã¢ ´İÈû ¶Ç´Â Ãë¼Ò)"
             return $false
         }
         if (-not (Set-ApiBaseAddress -ApiBase $cred.ApiBase)) {
-            Write-AppLog -Level ERROR -Message "ì„œë²„ ì£¼ì†Œê°€ ì˜¬ë°”ë¥´ì§€ ì•ŠìŒ: $($cred.ApiBase)"
-            Show-ErrorMessage -Text "ì„œë²„ ì£¼ì†Œê°€ ì˜¬ë°”ë¥´ì§€ ì•ŠìŠµë‹ˆë‹¤.`n$($cred.ApiBase)"
+            Write-AppLog -Level ERROR -Message "¼­¹ö ÁÖ¼Ò°¡ ¿Ã¹Ù¸£Áö ¾ÊÀ½: $($cred.ApiBase)"
+            Show-ErrorMessage -Text "¼­¹ö ÁÖ¼Ò°¡ ¿Ã¹Ù¸£Áö ¾Ê½À´Ï´Ù.`n$($cred.ApiBase)"
             return $false
         }
         Save-AppConfig -ApiBase $script:ApiBase
@@ -2708,8 +2708,8 @@ function Start-UserLogin {
     }
 
     try {
-        Set-StatusSafe "ë¡œê·¸ì¸ ì¤‘..."
-        Write-AppLog -Level INFO -Message "ë¡œê·¸ì¸ ì‹œë„ base=$($script:ApiBase) user=$($cred.UserId)"
+        Set-StatusSafe "·Î±×ÀÎ Áß..."
+        Write-AppLog -Level INFO -Message "·Î±×ÀÎ ½Ãµµ base=$($script:ApiBase) user=$($cred.UserId)"
         $result = Invoke-ApiLogin -UserId $cred.UserId -Password $cred.Password
 
         $script:CurrentUserId = $cred.UserId
@@ -2722,26 +2722,26 @@ function Start-UserLogin {
             Save-SyncState -LastSync $prevSync -LastMessageId $prevId -CurrentUserId $script:CurrentUserId
         }
 
-        Write-AppLog -Level INFO -Message "ë¡œê·¸ì¸ ì™„ë£Œ user=$($script:CurrentUserId) name=$($script:CurrentUserName)"
+        Write-AppLog -Level INFO -Message "·Î±×ÀÎ ¿Ï·á user=$($script:CurrentUserId) name=$($script:CurrentUserName)"
         Save-AppStateDirty
         return $true
     }
     catch {
-        Write-AppLog -Level ERROR -Message "ë¡œê·¸ì¸ ì‹¤íŒ¨" -Exception $_.Exception
+        Write-AppLog -Level ERROR -Message "·Î±×ÀÎ ½ÇÆĞ" -Exception $_.Exception
 
-        $retry = Show-ConfirmDialog -Text ("ë¡œê·¸ì¸ì— ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤.`n{0}`n`nì„œë²„ ì£¼ì†Œì™€ ìê²© ì¦ëª…ì„ ë‹¤ì‹œ ì…ë ¥í• ê¹Œìš”?" -f $_.Exception.Message) -Title "ë¡œê·¸ì¸ ì‹¤íŒ¨"
+        $retry = Show-ConfirmDialog -Text ("·Î±×ÀÎ¿¡ ½ÇÆĞÇß½À´Ï´Ù.`n{0}`n`n¼­¹ö ÁÖ¼Ò¿Í ÀÚ°İ Áõ¸íÀ» ´Ù½Ã ÀÔ·ÂÇÒ±î¿ä?" -f $_.Exception.Message) -Title "·Î±×ÀÎ ½ÇÆĞ"
         if ($retry) {
             $newCred = Show-LoginDialog -DefaultUserId $cred.UserId -DefaultApiBase $script:ApiBase
             if ($newCred) {
                 if (-not (Set-ApiBaseAddress -ApiBase $newCred.ApiBase)) {
-                    Show-ErrorMessage -Text ("ì„œë²„ ì£¼ì†Œê°€ ì˜¬ë°”ë¥´ì§€ ì•ŠìŠµë‹ˆë‹¤.`n{0}" -f $newCred.ApiBase)
+                    Show-ErrorMessage -Text ("¼­¹ö ÁÖ¼Ò°¡ ¿Ã¹Ù¸£Áö ¾Ê½À´Ï´Ù.`n{0}" -f $newCred.ApiBase)
                     return $false
                 }
                 Save-AppConfig -ApiBase $script:ApiBase
                 Save-UserCredential -UserId $newCred.UserId -Password $newCred.Password
                 return (Start-UserLogin)
             }
-            Write-AppLog -Level INFO -Message "ë¡œê·¸ì¸ ì¬ì…ë ¥ ì·¨ì†Œ"
+            Write-AppLog -Level INFO -Message "·Î±×ÀÎ ÀçÀÔ·Â Ãë¼Ò"
         }
         return $false
     }
@@ -2750,9 +2750,9 @@ function Start-UserLogin {
 
 
 function Initialize-UserCache {
-    # ìµœì´ˆ ì‚¬ìš©ì ëª©ë¡ ì¡°íšŒ â†’ users.json ì €ì¥
+    # ÃÖÃÊ »ç¿ëÀÚ ¸ñ·Ï Á¶È¸ ¡æ users.json ÀúÀå
     try {
-        Set-StatusSafe "ì‚¬ìš©ì ëª©ë¡ ì¡°íšŒ ì¤‘..."
+        Set-StatusSafe "»ç¿ëÀÚ ¸ñ·Ï Á¶È¸ Áß..."
         $rawUsers = @(Get-ApiUserList)
         $userList = New-Object System.Collections.ArrayList
         foreach ($u in $rawUsers) {
@@ -2771,11 +2771,11 @@ function Initialize-UserCache {
         Save-AppStateDirty
         $me = Get-UserById -Id $script:CurrentUserId
         if ($me -and $me.name) { $script:CurrentUserName = [string]$me.name }
-        Write-AppLog -Level INFO -Message "ì‚¬ìš©ì $($users.Count)ëª… ìºì‹œ ì €ì¥"
+        Write-AppLog -Level INFO -Message "»ç¿ëÀÚ $($users.Count)¸í Ä³½Ã ÀúÀå"
     }
     catch {
-        Write-AppLog -Level ERROR -Message "ì‚¬ìš©ì ëª©ë¡ ì¡°íšŒ ì‹¤íŒ¨: $($_.Exception.Message)" -Exception $_.Exception
-        Set-StatusSafe ("ì‚¬ìš©ì ëª©ë¡ ì‹¤íŒ¨: " + $_.Exception.Message)
+        Write-AppLog -Level ERROR -Message "»ç¿ëÀÚ ¸ñ·Ï Á¶È¸ ½ÇÆĞ: $($_.Exception.Message)" -Exception $_.Exception
+        Set-StatusSafe ("»ç¿ëÀÚ ¸ñ·Ï ½ÇÆĞ: " + $_.Exception.Message)
     }
 }
 
@@ -2822,7 +2822,7 @@ function Get-FilteredUsers {
 }
 
 function Invoke-LoadOlderChatMessages {
-    # ì´ì „ ë©”ì‹œì§€ ë” ë¶ˆëŸ¬ì˜¤ê¸° (pageSize ë‹¨ìœ„). ë””ìŠ¤í¬ë§Œ ì½ìœ¼ë‹ˆ polling/sending ì¤‘ì—ë„ ì•ˆì „
+    # ÀÌÀü ¸Ş½ÃÁö ´õ ºÒ·¯¿À±â (pageSize ´ÜÀ§). µğ½ºÅ©¸¸ ÀĞÀ¸´Ï polling/sending Áß¿¡µµ ¾ÈÀü
     if (-not $script:CurrentChatMD5) { return }
 
     $page = 50
@@ -2839,27 +2839,27 @@ function Invoke-LoadOlderChatMessages {
     if ($script:ChatRichTextBox -and -not $script:ChatRichTextBox.IsDisposed) {
         Show-ChatMessages -WebBrowser $script:ChatRichTextBox -Messages $msgs
     }
-    Set-StatusSafe ("ì´ì „ ë©”ì‹œì§€ í¬í•¨ {0}ê±´ í‘œì‹œ" -f $msgs.Count)
+    Set-StatusSafe ("ÀÌÀü ¸Ş½ÃÁö Æ÷ÇÔ {0}°Ç Ç¥½Ã" -f $msgs.Count)
 }
 
 function New-MainForm {
-    # MainForm: ëŒ€í™” ëª©ë¡ / ì‚¬ìš©ì ëª©ë¡ íƒ­ + íŠ¸ë ˆì´ ì•„ì´ì½˜
+    # MainForm: ´ëÈ­ ¸ñ·Ï / »ç¿ëÀÚ ¸ñ·Ï ÅÇ + Æ®·¹ÀÌ ¾ÆÀÌÄÜ
     $form = New-Object System.Windows.Forms.Form
-    $form.Text = "ì˜¤ì¼€ìŠ¤íŠ¸ë¼ ì±„íŒ… - $($script:CurrentUserName)"
+    $form.Text = "¿ÀÄÉ½ºÆ®¶ó Ã¤ÆÃ - $($script:CurrentUserName)"
     $form.Size = New-Object System.Drawing.Size(520, 680)
     $form.StartPosition = 'CenterScreen'
     $form.MinimumSize = New-Object System.Drawing.Size(400, 400)
-    $form.Font = New-Object System.Drawing.Font('ë§‘ì€ ê³ ë”•', 9)
+    $form.Font = New-Object System.Drawing.Font('¸¼Àº °íµñ', 9)
 
     $tabs = New-Object System.Windows.Forms.TabControl
     $tabs.Dock = [System.Windows.Forms.DockStyle]::Fill
     $form.Controls.Add($tabs)
 
     $tabConv = New-Object System.Windows.Forms.TabPage
-    $tabConv.Text = 'ëŒ€í™” ëª©ë¡'
+    $tabConv.Text = '´ëÈ­ ¸ñ·Ï'
     $tabs.TabPages.Add($tabConv)
 
-    # TableLayout: ê²€ìƒ‰í–‰ + ëª©ë¡
+    # TableLayout: °Ë»öÇà + ¸ñ·Ï
     $layoutConv = New-Object System.Windows.Forms.TableLayoutPanel
     $layoutConv.Dock = [System.Windows.Forms.DockStyle]::Fill
     $layoutConv.ColumnCount = 1
@@ -2879,7 +2879,7 @@ function New-MainForm {
     $layoutConv.Controls.Add($panelConvFilter, 0, 0)
 
     $chkUnread = New-Object System.Windows.Forms.CheckBox
-    $chkUnread.Text = 'ë¯¸í™•ì¸ë§Œ'
+    $chkUnread.Text = '¹ÌÈ®ÀÎ¸¸'
     $chkUnread.Dock = [System.Windows.Forms.DockStyle]::Right
     $chkUnread.Width = 90
     $chkUnread.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
@@ -2915,7 +2915,7 @@ function New-MainForm {
     $script:ConversationListView = $lvConv
 
     $tabUser = New-Object System.Windows.Forms.TabPage
-    $tabUser.Text = 'ì‚¬ìš©ì ëª©ë¡'
+    $tabUser.Text = '»ç¿ëÀÚ ¸ñ·Ï'
     $tabs.TabPages.Add($tabUser)
 
     $layoutUser = New-Object System.Windows.Forms.TableLayoutPanel
@@ -2958,7 +2958,7 @@ function New-MainForm {
     $script:UserListView = $lvUser
 
     $btnNewChat = New-Object System.Windows.Forms.Button
-    $btnNewChat.Text = 'ì„ íƒ ì‚¬ìš©ìì™€ ëŒ€í™” ì‹œì‘'
+    $btnNewChat.Text = '¼±ÅÃ »ç¿ëÀÚ¿Í ´ëÈ­ ½ÃÀÛ'
     $btnNewChat.Dock = [System.Windows.Forms.DockStyle]::Fill
     $btnNewChat.Margin = New-Object System.Windows.Forms.Padding(6, 4, 6, 6)
     $layoutUser.Controls.Add($btnNewChat, 0, 2)
@@ -2967,22 +2967,22 @@ function New-MainForm {
     $statusLabel = New-Object System.Windows.Forms.ToolStripStatusLabel
     $statusLabel.Spring = $true
     $statusLabel.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
-    $statusLabel.Text = 'ì¤€ë¹„'
+    $statusLabel.Text = 'ÁØºñ'
     [void]$status.Items.Add($statusLabel)
     $form.Controls.Add($status)
     $script:StatusLabel = $statusLabel
 
     $notify = New-Object System.Windows.Forms.NotifyIcon
-    $notify.Text = "ë‚´ë¶€ ì±„íŒ… - $($script:CurrentUserName)"
+    $notify.Text = "³»ºÎ Ã¤ÆÃ - $($script:CurrentUserName)"
     $notify.Visible = $true
     try { $notify.Icon = [System.Drawing.SystemIcons]::Application }
     catch { $notify.Icon = [System.Drawing.SystemIcons]::Information }
     $script:NotifyIcon = $notify
 
     $trayMenu = New-Object System.Windows.Forms.ContextMenuStrip
-    $miOpen = $trayMenu.Items.Add('ë©”ì¸ ì°½ ì—´ê¸°')
+    $miOpen = $trayMenu.Items.Add('¸ŞÀÎ Ã¢ ¿­±â')
     [void]$trayMenu.Items.Add('-')
-    $miExit2 = $trayMenu.Items.Add('ì¢…ë£Œ')
+    $miExit2 = $trayMenu.Items.Add('Á¾·á')
     $notify.ContextMenuStrip = $trayMenu
     $miOpen.Add_Click({ Restore-MainForm })
     $miExit2.Add_Click({ Exit-Application })
@@ -2997,7 +2997,7 @@ function New-MainForm {
     })
 
     $convMenu = New-Object System.Windows.Forms.ContextMenuStrip
-    $miRename = $convMenu.Items.Add('ì œëª© ë³€ê²½')
+    $miRename = $convMenu.Items.Add('Á¦¸ñ º¯°æ')
     $miRename.Add_Click({ Edit-SelectedConversationTitle })
     $lvConv.ContextMenuStrip = $convMenu
 
@@ -3047,7 +3047,7 @@ function Set-StatusSafe {
 }
 
 function Get-SessionCookieHeader {
-    # HttpSession ì¿ í‚¤ â†’ Cookie: í—¤ë” ë¬¸ìì—´ (ë°±ê·¸ë¼ìš´ë“œ HTTPìš©)
+    # HttpSession ÄíÅ° ¡æ Cookie: Çì´õ ¹®ÀÚ¿­ (¹é±×¶ó¿îµå HTTP¿ë)
     if (-not $script:HttpSession) { return '' }
     try {
         $base = [string]$script:ApiBase
@@ -3071,7 +3071,7 @@ function Get-SessionCookieHeader {
 }
 
 function Update-StatusStripInfo {
-    # ìƒíƒœì¤„: ë™ê¸°ì‹œê° / API ë ˆì´í„´ì‹œ
+    # »óÅÂÁÙ: µ¿±â½Ã°¢ / API ·¹ÀÌÅÏ½Ã
     param([string]$Prefix = '')
     $syncText = $script:LastSyncTimeText
     if (-not $syncText) { $syncText = '-' }
@@ -3079,9 +3079,9 @@ function Update-StatusStripInfo {
     $fail = [int]$script:ApiFailCount
     $ok = [int]$script:ApiCallCount
     $msg = if ($Prefix) {
-        '{0} | ë™ê¸° {1} | API {2}ms (ok {3}/fail {4})' -f $Prefix, $syncText, $lat, $ok, $fail
+        '{0} | µ¿±â {1} | API {2}ms (ok {3}/fail {4})' -f $Prefix, $syncText, $lat, $ok, $fail
     } else {
-        'ë™ê¸° {0} | API {1}ms (ok {2}/fail {3})' -f $syncText, $lat, $ok, $fail
+        'µ¿±â {0} | API {1}ms (ok {2}/fail {3})' -f $syncText, $lat, $ok, $fail
     }
     Set-StatusSafe $msg
 }
@@ -3099,7 +3099,7 @@ function Save-MainWindowBounds {
         }
         Save-AppConfig -MainWindow $script:MainWindowBounds
     } catch {
-        Write-AppLog -Level DEBUG -Message "ì°½ ìœ„ì¹˜ ì €ì¥ ì‹¤íŒ¨" -Exception $_.Exception
+        Write-AppLog -Level DEBUG -Message "Ã¢ À§Ä¡ ÀúÀå ½ÇÆĞ" -Exception $_.Exception
     }
 }
 
@@ -3112,7 +3112,7 @@ function Restore-MainWindowBounds {
         $h = [Math]::Max(400, [int]$mw.h)
         $x = [int]$mw.x
         $y = [int]$mw.y
-        # í™”ë©´ ë°–ìœ¼ë¡œ ì•ˆ ë‚˜ê°€ê²Œ ë³´ì •
+        # È­¸é ¹ÛÀ¸·Î ¾È ³ª°¡°Ô º¸Á¤
         $area = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
         if ($x + 50 -gt $area.Right) { $x = $area.Left + 20 }
         if ($y + 50 -gt $area.Bottom) { $y = $area.Top + 20 }
@@ -3124,7 +3124,7 @@ function Restore-MainWindowBounds {
 }
 
 function Test-SingleInstance {
-    # Mutexë¡œ ì¤‘ë³µ ì‹¤í–‰ ë°©ì§€
+    # Mutex·Î Áßº¹ ½ÇÇà ¹æÁö
     $name = 'Local\InternalChat_SingleInstance_Mutex_v1'
     $created = $false
     try {
@@ -3137,13 +3137,13 @@ function Test-SingleInstance {
         }
         return $true
     } catch {
-        Write-AppLog -Level WARN -Message "Mutex ìƒì„± ì‹¤íŒ¨(ê³„ì† ì§„í–‰)" -Exception $_.Exception
+        Write-AppLog -Level WARN -Message "Mutex »ı¼º ½ÇÆĞ(°è¼Ó ÁøÇà)" -Exception $_.Exception
         return $true
     }
 }
 
 function Invoke-SelfTest {
-    # í—¤ë“œë¦¬ìŠ¤ ìê°€ì§„ë‹¨. exit code 0=ì •ìƒ
+    # Çìµå¸®½º ÀÚ°¡Áø´Ü. exit code 0=Á¤»ó
     Write-Host '=== InternalChat SelfTest ===' -ForegroundColor Cyan
     $failed = 0
 
@@ -3225,7 +3225,7 @@ function Invoke-SelfTest {
 }
 
 function Update-ConversationListUi {
-    # í•„í„° ì ìš©ëœ ëŒ€í™” ëª©ë¡ â†’ ListView
+    # ÇÊÅÍ Àû¿ëµÈ ´ëÈ­ ¸ñ·Ï ¡æ ListView
     try {
         $convs = @(Get-FilteredConversations)
         if ($null -eq $convs) { $convs = @() }
@@ -3234,7 +3234,7 @@ function Update-ConversationListUi {
         }
     }
     catch {
-        Write-AppLog -Level ERROR -Message "ëŒ€í™” ëª©ë¡ ê°±ì‹  ì‹¤íŒ¨" -Exception $_.Exception
+        Write-AppLog -Level ERROR -Message "´ëÈ­ ¸ñ·Ï °»½Å ½ÇÆĞ" -Exception $_.Exception
     }
 }
 
@@ -3247,15 +3247,15 @@ function Update-UserListUi {
         }
     }
     catch {
-        Write-AppLog -Level ERROR -Message "ì‚¬ìš©ì ëª©ë¡ ê°±ì‹  ì‹¤íŒ¨" -Exception $_.Exception
+        Write-AppLog -Level ERROR -Message "»ç¿ëÀÚ ¸ñ·Ï °»½Å ½ÇÆĞ" -Exception $_.Exception
     }
 }
 
 function Start-NewConversationFromSelection {
-    # ì²´í¬ëœ ì‚¬ìš©ìì™€ ìƒˆ ëŒ€í™” ì‹œì‘
+    # Ã¼Å©µÈ »ç¿ëÀÚ¿Í »õ ´ëÈ­ ½ÃÀÛ
     $ids = @(Get-CheckedUserIds -ListView $script:UserListView)
     if ($ids.Count -eq 0) {
-        Show-InfoMessage -Text 'ëŒ€í™”í•  ì‚¬ìš©ìë¥¼ ì²´í¬í•˜ì„¸ìš”.'
+        Show-InfoMessage -Text '´ëÈ­ÇÒ »ç¿ëÀÚ¸¦ Ã¼Å©ÇÏ¼¼¿ä.'
         return
     }
 
@@ -3281,7 +3281,7 @@ function Start-NewConversationFromSelection {
 
 # -- 4. ChatForm ----------------------------------------------------------------
 function Open-ChatForm {
-    # ì§€ì • md5 ëŒ€í™”ë¥¼ ChatFormìœ¼ë¡œ ì—´ê¸°. ì´ë¯¸ ìˆìœ¼ë©´ ë‚´ìš©ë§Œ êµì²´
+    # ÁöÁ¤ md5 ´ëÈ­¸¦ ChatFormÀ¸·Î ¿­±â. ÀÌ¹Ì ÀÖÀ¸¸é ³»¿ë¸¸ ±³Ã¼
     param(
         [Parameter(Mandatory = $true)]
         [string]$Md5
@@ -3302,13 +3302,13 @@ function Open-ChatForm {
 }
 
 function New-ChatForm {
-    # ChatForm UI ìƒì„± (WebBrowser + TextBox + ì „ì†¡ ë²„íŠ¼)
+    # ChatForm UI »ı¼º (WebBrowser + TextBox + Àü¼Û ¹öÆ°)
     $form = New-Object System.Windows.Forms.Form
-    $form.Text = 'ëŒ€í™”'
+    $form.Text = '´ëÈ­'
     $form.Size = New-Object System.Drawing.Size(520, 680)
     $form.StartPosition = 'CenterScreen'
     $form.MinimumSize = New-Object System.Drawing.Size(400, 400)
-    $form.Font = New-Object System.Drawing.Font('ë§‘ì€ ê³ ë”•', 9)
+    $form.Font = New-Object System.Drawing.Font('¸¼Àº °íµñ', 9)
     $form.ShowInTaskbar = $true
 
     $titlePanel = New-Object System.Windows.Forms.Panel
@@ -3331,18 +3331,18 @@ function New-ChatForm {
     $lblTitle.Dock = [System.Windows.Forms.DockStyle]::Fill
     $lblTitle.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
     $lblTitle.Padding = New-Object System.Windows.Forms.Padding(8, 0, 0, 0)
-    $lblTitle.Text = 'ëŒ€í™”'
+    $lblTitle.Text = '´ëÈ­'
     $titleTable.Controls.Add($lblTitle, 0, 0)
     $script:ChatTitleLabel = $lblTitle
 
     $btnMembers = New-Object System.Windows.Forms.Button
-    $btnMembers.Text = 'ì°¸ì—¬ì'
+    $btnMembers.Text = 'Âü¿©ÀÚ'
     $btnMembers.Dock = [System.Windows.Forms.DockStyle]::Fill
     $btnMembers.Margin = New-Object System.Windows.Forms.Padding(2, 2, 4, 2)
     $btnMembers.Add_Click({ Show-ChatParticipants })
     $titleTable.Controls.Add($btnMembers, 1, 0)
 
-    # ì´ì „ ëŒ€í™” ë¶ˆëŸ¬ì˜¤ê¸°
+    # ÀÌÀü ´ëÈ­ ºÒ·¯¿À±â
     $olderPanel = New-Object System.Windows.Forms.Panel
     $olderPanel.Dock = [System.Windows.Forms.DockStyle]::Top
     $olderPanel.Height = 36
@@ -3351,19 +3351,19 @@ function New-ChatForm {
     $form.Controls.Add($olderPanel)
 
     $btnOlder = New-Object System.Windows.Forms.Button
-    $btnOlder.Text = 'ì´ì „ ëŒ€í™” ë¶ˆëŸ¬ì˜¤ê¸°'
+    $btnOlder.Text = 'ÀÌÀü ´ëÈ­ ºÒ·¯¿À±â'
     $btnOlder.Dock = [System.Windows.Forms.DockStyle]::Fill
     $btnOlder.Add_Click({ Invoke-LoadOlderChatMessages })
     $olderPanel.Controls.Add($btnOlder)
 
-    # ì…ë ¥ ì˜ì—­
+    # ÀÔ·Â ¿µ¿ª
     $bottom = New-Object System.Windows.Forms.Panel
     $bottom.Dock = [System.Windows.Forms.DockStyle]::Bottom
     $bottom.Height = 100
     $form.Controls.Add($bottom)
 
     $btnSend = New-Object System.Windows.Forms.Button
-    $btnSend.Text = 'ì „ì†¡'
+    $btnSend.Text = 'Àü¼Û'
     $btnSend.Dock = [System.Windows.Forms.DockStyle]::Right
     $btnSend.Width = 80
     $btnSend.Add_Click({ Invoke-ChatSend })
@@ -3377,7 +3377,7 @@ function New-ChatForm {
     $bottom.Controls.Add($txtInput)
     $script:ChatInputBox = $txtInput
 
-    # Enter=ì „ì†¡, Shift+Enter=ì¤„ë°”ê¿ˆ
+    # Enter=Àü¼Û, Shift+Enter=ÁÙ¹Ù²Ş
     $txtInput.Add_KeyDown({
         param($sender, $e)
         if ($e.KeyCode -eq [System.Windows.Forms.Keys]::Enter -and -not $e.Shift) {
@@ -3386,7 +3386,7 @@ function New-ChatForm {
         }
     })
 
-    # ë©”ì‹œì§€ ì˜ì—­ (WebBrowser. RichTextBoxë³´ë‹¤ ë Œë”ë§ ì•ˆì •ì )
+    # ¸Ş½ÃÁö ¿µ¿ª (WebBrowser. RichTextBoxº¸´Ù ·»´õ¸µ ¾ÈÁ¤Àû)
     $wb = New-Object System.Windows.Forms.WebBrowser
     $wb.Dock = [System.Windows.Forms.DockStyle]::Fill
     $wb.AllowNavigation = $false
@@ -3396,17 +3396,17 @@ function New-ChatForm {
     $form.Controls.Add($wb)
     $script:ChatRichTextBox = $wb
 
-    $html = Get-ChatMessagesHtml -Messages @() -Title 'ëŒ€í™”'
+    $html = Get-ChatMessagesHtml -Messages @() -Title '´ëÈ­'
     $wb.DocumentText = $html
 
-    # Fill ì»¨íŠ¸ë¡¤ì€ z-order ë’¤ë¡œ â†’ Top/Bottomì´ ê³µê°„ ë¨¼ì € í™•ë³´
+    # Fill ÄÁÆ®·ÑÀº z-order µÚ·Î ¡æ Top/BottomÀÌ °ø°£ ¸ÕÀú È®º¸
     $wb.SendToBack()
 
     $chatStatus = New-Object System.Windows.Forms.StatusStrip
     $chatStatusLabel = New-Object System.Windows.Forms.ToolStripStatusLabel
     $chatStatusLabel.Spring = $true
     $chatStatusLabel.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
-    $chatStatusLabel.Text = 'ì¤€ë¹„'
+    $chatStatusLabel.Text = 'ÁØºñ'
     [void]$chatStatus.Items.Add($chatStatusLabel)
     $form.Controls.Add($chatStatus)
     $script:ChatStatusLabel = $chatStatusLabel
@@ -3429,7 +3429,7 @@ function New-ChatForm {
 }
 
 function Initialize-ChatContent {
-    # md5 ëŒ€í™” ë©”ì‹œì§€ ë¡œë“œ. ìµœì‹  ì›”ë¶€í„° í•„ìš”í•œ ë§Œí¼ë§Œ
+    # md5 ´ëÈ­ ¸Ş½ÃÁö ·Îµå. ÃÖ½Å ¿ùºÎÅÍ ÇÊ¿äÇÑ ¸¸Å­¸¸
     param(
         [Parameter(Mandatory = $true)]
         [string]$Md5
@@ -3444,7 +3444,7 @@ function Initialize-ChatContent {
     }
 
     if ($script:ChatForm -and -not $script:ChatForm.IsDisposed) {
-        $script:ChatForm.Text = "ëŒ€í™” - $title"
+        $script:ChatForm.Text = "´ëÈ­ - $title"
     }
     if ($script:ChatTitleLabel -and -not $script:ChatTitleLabel.IsDisposed) {
         $script:ChatTitleLabel.Text = "  $title"
@@ -3470,7 +3470,7 @@ function Initialize-ChatContent {
 
 
 function Show-ChatForm {
-    # ChatForm í‘œì‹œ + í¬ì»¤ìŠ¤
+    # ChatForm Ç¥½Ã + Æ÷Ä¿½º
     if ($null -eq $script:ChatForm -or $script:ChatForm.IsDisposed) { return }
 
     if (-not $script:ChatForm.Visible) {
@@ -3488,18 +3488,18 @@ function Show-ChatForm {
 }
 
 function Hide-MainFormToTray {
-    # ë©”ì¸ ì°½ â†’ íŠ¸ë ˆì´ë¡œ ìˆ¨ê¹€ (ì¢…ë£Œ ì•„ë‹˜)
+    # ¸ŞÀÎ Ã¢ ¡æ Æ®·¹ÀÌ·Î ¼û±è (Á¾·á ¾Æ´Ô)
     try { Save-MainWindowBounds } catch { }
     if ($script:MainForm -and -not $script:MainForm.IsDisposed) {
         $script:MainForm.ShowInTaskbar = $false
         $script:MainForm.WindowState = [System.Windows.Forms.FormWindowState]::Normal
         $script:MainForm.Visible = $false
-        Write-AppLog -Level INFO -Message "ë©”ì¸ ì°½ íŠ¸ë ˆì´ ìˆ¨ê¹€"
+        Write-AppLog -Level INFO -Message "¸ŞÀÎ Ã¢ Æ®·¹ÀÌ ¼û±è"
     }
 }
 
 function Restore-MainForm {
-    # íŠ¸ë ˆì´ì—ì„œ ë©”ì¸ ì°½ ë³µì›
+    # Æ®·¹ÀÌ¿¡¼­ ¸ŞÀÎ Ã¢ º¹¿ø
     if (-not $script:MainForm -or $script:MainForm.IsDisposed) { return }
     $script:MainForm.ShowInTaskbar = $true
     $script:MainForm.Visible = $true
@@ -3511,13 +3511,13 @@ function Restore-MainForm {
 }
 
 function Test-ChatFormVisible {
-    # ChatFormì´ ë³´ì´ëŠ” ìƒíƒœì¸ì§€
+    # ChatFormÀÌ º¸ÀÌ´Â »óÅÂÀÎÁö
     if ($null -eq $script:ChatForm) { return $false }
     if ($script:ChatForm.IsDisposed) { return $false }
     return [bool]$script:ChatForm.Visible
 }
 
-# -- 5. í´ë§ --------------------------------------------------------------------
+# -- 5. Æú¸µ --------------------------------------------------------------------
 function Get-MessageListUri {
     param([string]$StartYmd = '')
     $ymd = if ($null -eq $StartYmd) { '' } else { [string]$StartYmd }
@@ -3526,21 +3526,21 @@ function Get-MessageListUri {
 }
 
 function ConvertFrom-PollJsonBody {
-    # JSON ì‘ë‹µ ë³¸ë¬¸ â†’ rows ë°°ì—´
+    # JSON ÀÀ´ä º»¹® ¡æ rows ¹è¿­
     param([string]$Body)
     if ([string]::IsNullOrWhiteSpace($Body)) { return @() }
     try {
         $obj = $Body | ConvertFrom-Json
     }
     catch {
-        Write-AppLog -Level WARN -Message "í´ë§ JSON íŒŒì‹± ì‹¤íŒ¨" -Exception $_.Exception
+        Write-AppLog -Level WARN -Message "Æú¸µ JSON ÆÄ½Ì ½ÇÆĞ" -Exception $_.Exception
         return @()
     }
     return @(Get-ApiRows -Result $obj)
 }
 
 function Complete-MessagePollFromRows {
-    # í´ë§ ê²°ê³¼ rows â†’ ë¡œì»¬ ì €ì¥ + UI ê°±ì‹ 
+    # Æú¸µ °á°ú rows ¡æ ·ÎÄÃ ÀúÀå + UI °»½Å
     param(
         [AllowEmptyCollection()]
         [array]$RawList = @(),
@@ -3576,7 +3576,7 @@ function Complete-MessagePollFromRows {
             }
         }
         catch {
-            Write-AppLog -Level WARN -Message "ë©”ì‹œì§€ ì •ê·œí™” ì‹¤íŒ¨" -Exception $_.Exception
+            Write-AppLog -Level WARN -Message "¸Ş½ÃÁö Á¤±ÔÈ­ ½ÇÆĞ" -Exception $_.Exception
         }
 
         if ($pollProcessed % $pollBatchSize -eq 0) {
@@ -3591,7 +3591,7 @@ function Complete-MessagePollFromRows {
             Save-SyncState -LastSync $keepYmd -LastMessageId $keepId -CurrentUserId $script:CurrentUserId
         }
         $script:LastSyncTimeText = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
-        Update-StatusStripInfo -Prefix 'ë™ê¸°í™” ì™„ë£Œ'
+        Update-StatusStripInfo -Prefix 'µ¿±âÈ­ ¿Ï·á'
         return
     }
 
@@ -3715,12 +3715,12 @@ function Complete-MessagePollFromRows {
     }
 
     $script:LastSyncTimeText = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
-    Update-StatusStripInfo -Prefix ("ë™ê¸°í™” ì™„ë£Œ ({0})" -f $newMessages.Count)
+    Update-StatusStripInfo -Prefix ("µ¿±âÈ­ ¿Ï·á ({0})" -f $newMessages.Count)
 }
 
 function Invoke-MessagePoll {
-    # ë™ê¸° í´ë§. ì´ˆê¸° ë™ê¸°í™”ìš©
-    Set-StatusSafe "ë™ê¸°í™” ì¤‘..."
+    # µ¿±â Æú¸µ. ÃÊ±â µ¿±âÈ­¿ë
+    Set-StatusSafe "µ¿±âÈ­ Áß..."
 
     $sync = Get-SyncState
     $startYmd = ''
@@ -3738,14 +3738,14 @@ function Invoke-MessagePoll {
 }
 
 function Complete-MessagePollAsync {
-    # ë°±ê·¸ë¼ìš´ë“œ HTTP ì™„ë£Œ ì½œë°±
+    # ¹é±×¶ó¿îµå HTTP ¿Ï·á Äİ¹é
     param($Result)
 
     try {
         if ($script:IsExiting) { return }
 
         if ($null -eq $Result) {
-            Set-StatusSafe "ë™ê¸°í™” ì‹¤íŒ¨: ê²°ê³¼ ì—†ìŒ"
+            Set-StatusSafe "µ¿±âÈ­ ½ÇÆĞ: °á°ú ¾øÀ½"
             return
         }
 
@@ -3756,8 +3756,8 @@ function Complete-MessagePollAsync {
             $err = ''
             try { $err = [string]$Result.Error } catch { $err = 'unknown' }
             if ($err.Length -gt 80) { $err = $err.Substring(0, 80) + '...' }
-            Write-AppLog -Level ERROR -Message ("ë°±ê·¸ë¼ìš´ë“œ í´ë§ ì‹¤íŒ¨: " + $err)
-            Set-StatusSafe ("ë™ê¸°í™” ì˜¤ë¥˜: " + $err)
+            Write-AppLog -Level ERROR -Message ("¹é±×¶ó¿îµå Æú¸µ ½ÇÆĞ: " + $err)
+            Set-StatusSafe ("µ¿±âÈ­ ¿À·ù: " + $err)
             return
         }
 
@@ -3772,10 +3772,10 @@ function Complete-MessagePollAsync {
         Complete-MessagePollFromRows -RawList $rows -LastMsgId $lastMsgId -StartYmd $startYmd
     }
     catch {
-        Write-AppLog -Level ERROR -Message "í´ë§ ì™„ë£Œ ì²˜ë¦¬ ì˜ˆì™¸" -Exception $_.Exception
+        Write-AppLog -Level ERROR -Message "Æú¸µ ¿Ï·á Ã³¸® ¿¹¿Ü" -Exception $_.Exception
         $err = $_.Exception.Message
         if ($err.Length -gt 80) { $err = $err.Substring(0, 80) + '...' }
-        Set-StatusSafe ("ë™ê¸°í™” ì˜¤ë¥˜: " + $err)
+        Set-StatusSafe ("µ¿±âÈ­ ¿À·ù: " + $err)
     }
     finally {
         try { Save-AppStateDirty } catch {
@@ -3791,7 +3791,7 @@ function Invoke-PollTimerTick {
     if ($script:IsExiting) { return }
     if ($script:isSending) { return }
 
-    # ë°±ê·¸ë¼ìš´ë“œ PowerShell runspace ì™„ë£Œ ì²´í¬
+    # ¹é±×¶ó¿îµå PowerShell runspace ¿Ï·á Ã¼Å©
     if ($null -ne $script:PollPsHandle -and $script:PollPsHandle.IsCompleted) {
         $script:isPolling = $true
         try {
@@ -3803,8 +3803,8 @@ function Invoke-PollTimerTick {
             $out = $null
             try { $out = $ps.EndInvoke($handle) }
             catch {
-                Write-AppLog -Level ERROR -Message "poll EndInvoke ì‹¤íŒ¨" -Exception $_.Exception
-                Update-StatusStripInfo -Prefix 'ë™ê¸°í™” ì˜¤ë¥˜'
+                Write-AppLog -Level ERROR -Message "poll EndInvoke ½ÇÆĞ" -Exception $_.Exception
+                Update-StatusStripInfo -Prefix 'µ¿±âÈ­ ¿À·ù'
                 return
             }
             finally { try { $ps.Dispose() } catch { } }
@@ -3825,10 +3825,10 @@ function Invoke-PollTimerTick {
             if (-not $ok) {
                 $em = [string]$err
                 if ($em.Length -gt 80) { $em = $em.Substring(0, 80) + '...' }
-                Write-AppLog -Level ERROR -Message ("ë°±ê·¸ë¼ìš´ë“œ í´ë§ ì‹¤íŒ¨: " + $em)
+                Write-AppLog -Level ERROR -Message ("¹é±×¶ó¿îµå Æú¸µ ½ÇÆĞ: " + $em)
                 $script:ApiFailCount = [int]$script:ApiFailCount + 1
                 $script:ApiLastError = $em
-                Update-StatusStripInfo -Prefix ('ë™ê¸°í™” ì˜¤ë¥˜: ' + $em)
+                Update-StatusStripInfo -Prefix ('µ¿±âÈ­ ¿À·ù: ' + $em)
             } else {
                 $script:ApiLastLatencyMs = $lat
                 $script:ApiCallCount = [int]$script:ApiCallCount + 1
@@ -3843,8 +3843,8 @@ function Invoke-PollTimerTick {
             }
         }
         catch {
-            Write-AppLog -Level ERROR -Message "í´ë§ ê²°ê³¼ ì²˜ë¦¬ ì˜ˆì™¸" -Exception $_.Exception
-            Update-StatusStripInfo -Prefix 'ë™ê¸°í™” ì²˜ë¦¬ ì˜¤ë¥˜'
+            Write-AppLog -Level ERROR -Message "Æú¸µ °á°ú Ã³¸® ¿¹¿Ü" -Exception $_.Exception
+            Update-StatusStripInfo -Prefix 'µ¿±âÈ­ Ã³¸® ¿À·ù'
         }
         finally {
             try { Save-AppStateDirty } catch { }
@@ -3865,8 +3865,8 @@ function Invoke-PollTimerTick {
         catch {
             $err = $_.Exception.Message
             if ($err.Length -gt 80) { $err = $err.Substring(0, 80) + '...' }
-            Write-AppLog -Level ERROR -Message "í´ë§ ì˜ˆì™¸: $($_.Exception.Message)" -Exception $_.Exception
-            Update-StatusStripInfo -Prefix ('ë™ê¸°í™” ì˜¤ë¥˜: ' + $err)
+            Write-AppLog -Level ERROR -Message "Æú¸µ ¿¹¿Ü: $($_.Exception.Message)" -Exception $_.Exception
+            Update-StatusStripInfo -Prefix ('µ¿±âÈ­ ¿À·ù: ' + $err)
         }
         finally {
             try { Save-AppStateDirty } catch { }
@@ -3878,7 +3878,7 @@ function Invoke-PollTimerTick {
 function Start-MessagePollAsync { Start-MessagePollBackground }
 
 function Start-MessagePollBackground {
-    # ë³„ë„ PowerShell runspaceì—ì„œ HTTP GET ì‹¤í–‰
+    # º°µµ PowerShell runspace¿¡¼­ HTTP GET ½ÇÇà
     if ($script:IsExiting) { return }
     if ($script:isPolling -or $script:PollAsyncRunning) { return }
     if ($script:isSending) { return }
@@ -3911,7 +3911,7 @@ function Start-MessagePollBackground {
     $script:isPolling = $true
     $script:PollAsyncRunning = $true
     $script:PollBgContext = [PSCustomObject]@{ LastMsgId = $lastMsgId; StartYmd = $startYmd; Uri = $uri }
-    Update-StatusStripInfo -Prefix 'ë™ê¸°í™” ì¤‘...'
+    Update-StatusStripInfo -Prefix 'µ¿±âÈ­ Áß...'
     Write-AppLog -Level DEBUG -Message ("poll bg start " + $uri)
 
     try {
@@ -3931,11 +3931,11 @@ function Start-MessagePollBackground {
         $script:PollPsInstance = $ps
         $script:PollPsHandle = $ps.BeginInvoke()
     } catch {
-        Write-AppLog -Level WARN -Message "ë°±ê·¸ë¼ìš´ë“œ í´ë§ ì‹œì‘ ì‹¤íŒ¨ - ë™ê¸°" -Exception $_.Exception
+        Write-AppLog -Level WARN -Message "¹é±×¶ó¿îµå Æú¸µ ½ÃÀÛ ½ÇÆĞ - µ¿±â" -Exception $_.Exception
         $script:UseBackgroundPoll = $false
         $script:PollAsyncRunning = $false
         try { Invoke-MessagePoll } catch {
-            Write-AppLog -Level ERROR -Message "ë™ê¸° í´ë§ ì‹¤íŒ¨" -Exception $_.Exception
+            Write-AppLog -Level ERROR -Message "µ¿±â Æú¸µ ½ÇÆĞ" -Exception $_.Exception
         } finally {
             try { Save-AppStateDirty } catch { }
             $script:isPolling = $false
@@ -3946,7 +3946,7 @@ function Start-MessagePollBackground {
 
 
 function Add-MessagesToChatUi {
-    # í˜„ì¬ ì—´ë¦° ChatFormì—ë§Œ ë©”ì‹œì§€ append
+    # ÇöÀç ¿­¸° ChatForm¿¡¸¸ ¸Ş½ÃÁö append
     param([array]$Messages)
 
     if (-not (Test-ChatFormVisible)) { return }
@@ -3958,26 +3958,26 @@ function Add-MessagesToChatUi {
             $script:ChatLoadedMessages = @($script:ChatLoadedMessages) + @($msg)
         }
         catch {
-            Write-AppLog -Level ERROR -Message "WebBrowser Append ì‹¤íŒ¨" -Exception $_.Exception
+            Write-AppLog -Level ERROR -Message "WebBrowser Append ½ÇÆĞ" -Exception $_.Exception
         }
     }
 }
 
 function Show-NewMessageBalloon {
-    # íŠ¸ë ˆì´ í’ì„  ì•Œë¦¼
+    # Æ®·¹ÀÌ Ç³¼± ¾Ë¸²
     param([array]$Messages)
     if (-not $script:NotifyIcon) { return }
     if (-not $Messages -or @($Messages).Count -eq 0) { return }
     $arr = @($Messages)
     $latest = $arr | Select-Object -Last 1
-    $sender = if ($latest.ac) { [string]$latest.ac } else { 'ì•Œ ìˆ˜ ì—†ìŒ' }
+    $sender = if ($latest.ac) { [string]$latest.ac } else { '¾Ë ¼ö ¾øÀ½' }
     $titlePart = if ($latest.ad) { [string]$latest.ad } else {
         $plain = ConvertFrom-HtmlToPlainText -Html ([string]$latest.ah)
         if ($plain.Length -gt 40) { $plain.Substring(0, 40) + '...' } else { $plain }
     }
     if ($titlePart.Length -gt 50) { $titlePart = $titlePart.Substring(0, 50) + '...' }
     $count = $arr.Count
-    $body = if ($count -gt 1) { "{0}: {1} ì™¸ {2}ê±´" -f $sender, $titlePart, ($count - 1) } else { "{0}: {1}" -f $sender, $titlePart }
+    $body = if ($count -gt 1) { "{0}: {1} ¿Ü {2}°Ç" -f $sender, $titlePart, ($count - 1) } else { "{0}: {1}" -f $sender, $titlePart }
     try {
         $md5 = $null
         if ($latest.ai) { $md5 = [string]$latest.ai }
@@ -3985,29 +3985,29 @@ function Show-NewMessageBalloon {
         $script:LastBalloonMd5 = $md5
     } catch { $script:LastBalloonMd5 = $null }
     try {
-        $script:NotifyIcon.ShowBalloonTip(5000, 'ìƒˆ ìª½ì§€ê°€ ë„ì°©í–ˆìŠµë‹ˆë‹¤', $body, [System.Windows.Forms.ToolTipIcon]::Info)
+        $script:NotifyIcon.ShowBalloonTip(5000, '»õ ÂÊÁö°¡ µµÂøÇß½À´Ï´Ù', $body, [System.Windows.Forms.ToolTipIcon]::Info)
     } catch {
-        Write-AppLog -Level WARN -Message "BalloonTip í‘œì‹œ ì‹¤íŒ¨" -Exception $_.Exception
+        Write-AppLog -Level WARN -Message "BalloonTip Ç¥½Ã ½ÇÆĞ" -Exception $_.Exception
     }
 }
 
 function Open-LastBalloonConversation {
-    # í’ì„  í´ë¦­ â†’ í•´ë‹¹ ëŒ€í™” ì—´ê¸°
+    # Ç³¼± Å¬¸¯ ¡æ ÇØ´ç ´ëÈ­ ¿­±â
     if ($script:IsExiting) { return }
     $md5 = $script:LastBalloonMd5
     if ([string]::IsNullOrWhiteSpace($md5)) { Restore-MainForm; return }
     try { Restore-MainForm; Open-ChatForm -Md5 $md5 } catch {
-        Write-AppLog -Level WARN -Message "Balloon í´ë¦­ ëŒ€í™” ì—´ê¸° ì‹¤íŒ¨" -Exception $_.Exception
+        Write-AppLog -Level WARN -Message "Balloon Å¬¸¯ ´ëÈ­ ¿­±â ½ÇÆĞ" -Exception $_.Exception
     }
 }
 
 
-# -- 6. ë©”ì‹œì§€ ì „ì†¡ --------------------------------------------------------------
+# -- 6. ¸Ş½ÃÁö Àü¼Û --------------------------------------------------------------
 function Invoke-ChatSend {
-    # ì…ë ¥ì°½ ë‚´ìš© ì „ì†¡. API ì„±ê³µ í›„ì—ë§Œ UI ë°˜ì˜
+    # ÀÔ·ÂÃ¢ ³»¿ë Àü¼Û. API ¼º°ø ÈÄ¿¡¸¸ UI ¹İ¿µ
     if ($script:isSending) { return }
     if (-not $script:CurrentChatMD5) {
-        Show-InfoMessage -Text 'ëŒ€í™”ê°€ ì„ íƒë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.'
+        Show-InfoMessage -Text '´ëÈ­°¡ ¼±ÅÃµÇÁö ¾Ê¾Ò½À´Ï´Ù.'
         return
     }
     if (-not $script:ChatInputBox -or $script:ChatInputBox.IsDisposed) { return }
@@ -4019,13 +4019,13 @@ function Invoke-ChatSend {
     try {
         $conv = Get-ConversationByMd5 -Md5 $script:CurrentChatMD5
         if (-not $conv) {
-            Show-ErrorMessage -Text 'ëŒ€í™” ì •ë³´ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.'
+            Show-ErrorMessage -Text '´ëÈ­ Á¤º¸¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.'
             return
         }
 
         $receivers = @($conv.participantIds | Where-Object { $_ -ne $script:CurrentUserId })
         if ($receivers.Count -eq 0) {
-            Show-ErrorMessage -Text 'ìˆ˜ì‹ ìê°€ ì—†ìŠµë‹ˆë‹¤.'
+            Show-ErrorMessage -Text '¼ö½ÅÀÚ°¡ ¾ø½À´Ï´Ù.'
             return
         }
 
@@ -4042,7 +4042,7 @@ function Invoke-ChatSend {
             }
         }
 
-        # API í˜¸ì¶œ ì „ ë¡œì»¬ ë©”ì‹œì§€ë¥¼ ë¨¼ì € UIì— í‘œì‹œ (ë‚™ê´€ì  ì—…ë°ì´íŠ¸)
+        # API È£Ãâ Àü ·ÎÄÃ ¸Ş½ÃÁö¸¦ ¸ÕÀú UI¿¡ Ç¥½Ã (³«°üÀû ¾÷µ¥ÀÌÆ®)
         $serverId = "LOCAL-{0:yyyyMMddHHmmssfff}" -f (Get-Date)
         $plain = $text.Trim()
         $title = if ($plain.Length -gt 10) { $plain.Substring(0, 10) } else { $plain }
@@ -4081,16 +4081,16 @@ function Invoke-ChatSend {
         Update-ConversationListUi
 
         [System.Windows.Forms.Application]::DoEvents()
-        Set-StatusSafe "ì „ì†¡ ì¤‘..."
+        Set-StatusSafe "Àü¼Û Áß..."
         $result = Send-ApiMessage -ReceiverIds $receivers -ReceiverNames $recvNames -BodyText $text
 
-        Set-StatusSafe "ì „ì†¡ ì™„ë£Œ"
-        Write-AppLog -Level INFO -Message "ë©”ì‹œì§€ ì „ì†¡ ì„±ê³µ md5=$($script:CurrentChatMD5)"
+        Set-StatusSafe "Àü¼Û ¿Ï·á"
+        Write-AppLog -Level INFO -Message "¸Ş½ÃÁö Àü¼Û ¼º°ø md5=$($script:CurrentChatMD5)"
     }
     catch {
-        Write-AppLog -Level ERROR -Message "ë©”ì‹œì§€ ì „ì†¡ ì‹¤íŒ¨" -Exception $_.Exception
-        Show-ErrorMessage -Text "ì „ì†¡ì— ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤.`n$($_.Exception.Message)"
-        Set-StatusSafe "ì „ì†¡ ì‹¤íŒ¨"
+        Write-AppLog -Level ERROR -Message "¸Ş½ÃÁö Àü¼Û ½ÇÆĞ" -Exception $_.Exception
+        Show-ErrorMessage -Text "Àü¼Û¿¡ ½ÇÆĞÇß½À´Ï´Ù.`n$($_.Exception.Message)"
+        Set-StatusSafe "Àü¼Û ½ÇÆĞ"
     }
     finally {
         try { Save-AppStateDirty } catch { Write-AppLog -Level ERROR -Message "send flush failed" -Exception $_.Exception }
@@ -4098,12 +4098,12 @@ function Invoke-ChatSend {
     }
 }
 
-# -- 7. ì¢…ë£Œ --------------------------------------------------------------------
+# -- 7. Á¾·á --------------------------------------------------------------------
 function Exit-Application {
-    # íŠ¸ë ˆì´ ë©”ë‰´ â†’ ì¢…ë£Œ
+    # Æ®·¹ÀÌ ¸Ş´º ¡æ Á¾·á
     if ($script:IsExiting) { return }
     $script:IsExiting = $true
-    Write-AppLog -Level INFO -Message "ì‚¬ìš©ì ì¢…ë£Œ ìš”ì²­ (íŠ¸ë ˆì´ ë©”ë‰´)"
+    Write-AppLog -Level INFO -Message "»ç¿ëÀÚ Á¾·á ¿äÃ» (Æ®·¹ÀÌ ¸Ş´º)"
     Complete-ApplicationShutdown
     try {
         if ($script:LifetimeForm -and -not $script:LifetimeForm.IsDisposed) {
@@ -4121,8 +4121,8 @@ function Exit-Application {
 }
 
 function Complete-ApplicationShutdown {
-    # íƒ€ì´ë¨¸ ì¤‘ì§€, ì»¨íŠ¸ë¡¤ Dispose, ë¯¼ê° ì •ë³´ ì •ë¦¬
-    Write-AppLog -Level INFO -Message "===== InternalChat ì¢…ë£Œ ì²˜ë¦¬ ====="
+    # Å¸ÀÌ¸Ó ÁßÁö, ÄÁÆ®·Ñ Dispose, ¹Î°¨ Á¤º¸ Á¤¸®
+    Write-AppLog -Level INFO -Message "===== InternalChat Á¾·á Ã³¸® ====="
 
     $script:IsExiting = $true
 
@@ -4138,7 +4138,7 @@ function Complete-ApplicationShutdown {
     }
     catch { }
 
-    # ë°±ê·¸ë¼ìš´ë“œ HTTP ì™„ë£Œ ëŒ€ê¸° (~0.5s)
+    # ¹é±×¶ó¿îµå HTTP ¿Ï·á ´ë±â (~0.5s)
     try {
         $wait = 0
         while ($script:PollAsyncRunning -and $wait -lt 10) {
@@ -4202,12 +4202,12 @@ function Complete-ApplicationShutdown {
         }
     } catch { }
 
-    Write-AppLog -Level INFO -Message "===== InternalChat ì¢…ë£Œ ì™„ë£Œ ====="
+    Write-AppLog -Level INFO -Message "===== InternalChat Á¾·á ¿Ï·á ====="
 }
 
-# -- 8. ì´ˆê¸° ë™ê¸°í™” --------------------------------------------------------------
+# -- 8. ÃÊ±â µ¿±âÈ­ --------------------------------------------------------------
 function Invoke-InitialSync {
-    # ë¡œê·¸ì¸ ì§í›„ 1íšŒ ë™ê¸° í´ë§
+    # ·Î±×ÀÎ Á÷ÈÄ 1È¸ µ¿±â Æú¸µ
     try {
         $script:isPolling = $true
         Invoke-MessagePoll
@@ -4215,18 +4215,18 @@ function Invoke-InitialSync {
     catch {
         $err = $_.Exception.Message
         if ($err.Length -gt 80) { $err = $err.Substring(0, 80) + '...' }
-        Write-AppLog -Level ERROR -Message "ì´ˆê¸° ë™ê¸°í™” ì‹¤íŒ¨: $($_.Exception.Message)" -Exception $_.Exception
-        Set-StatusSafe ("ì´ˆê¸° ë™ê¸°í™” ì‹¤íŒ¨: " + $err)
+        Write-AppLog -Level ERROR -Message "ÃÊ±â µ¿±âÈ­ ½ÇÆĞ: $($_.Exception.Message)" -Exception $_.Exception
+        Set-StatusSafe ("ÃÊ±â µ¿±âÈ­ ½ÇÆĞ: " + $err)
     }
     finally {
         try { Save-AppStateDirty } catch {
-            Write-AppLog -Level ERROR -Message "ì´ˆê¸° ë™ê¸°í™” flush ì‹¤íŒ¨" -Exception $_.Exception
+            Write-AppLog -Level ERROR -Message "ÃÊ±â µ¿±âÈ­ flush ½ÇÆĞ" -Exception $_.Exception
         }
         $script:isPolling = $false
     }
 }
 
-# ---- ë©”ì¸ ì§„ì…ì  --------------------------------------------------------------
+# ---- ¸ŞÀÎ ÁøÀÔÁ¡ --------------------------------------------------------------
 function Main {
     if ($SelfTest) {
         $code = Invoke-SelfTest
@@ -4236,7 +4236,7 @@ function Main {
     if (-not (Test-SingleInstance)) {
         try {
             [System.Windows.Forms.MessageBox]::Show(
-                'InternalChat ì´ ì´ë¯¸ ì‹¤í–‰ ì¤‘ì…ë‹ˆë‹¤.',
+                'InternalChat ÀÌ ÀÌ¹Ì ½ÇÇà ÁßÀÔ´Ï´Ù.',
                 'InternalChat',
                 [System.Windows.Forms.MessageBoxButtons]::OK,
                 [System.Windows.Forms.MessageBoxIcon]::Information
@@ -4252,13 +4252,13 @@ function Main {
     $loginOk = $false
     try { $loginOk = Start-UserLogin }
     catch {
-        Write-AppLog -Level ERROR -Message "ë¡œê·¸ì¸ ë‹¨ê³„ ì˜ˆì™¸" -Exception $_.Exception
-        Show-ErrorMessage -Text "ë¡œê·¸ì¸ ì¤‘ ì˜¤ë¥˜ê°€ ë°œìƒí–ˆìŠµë‹ˆë‹¤.`n$($_.Exception.Message)"
+        Write-AppLog -Level ERROR -Message "·Î±×ÀÎ ´Ü°è ¿¹¿Ü" -Exception $_.Exception
+        Show-ErrorMessage -Text "·Î±×ÀÎ Áß ¿À·ù°¡ ¹ß»ıÇß½À´Ï´Ù.`n$($_.Exception.Message)"
         $loginOk = $false
     }
 
     if (-not $loginOk) {
-        Write-AppLog -Level INFO -Message "ë¡œê·¸ì¸ ì‹¤íŒ¨/ì·¨ì†Œë¡œ ì¢…ë£Œ"
+        Write-AppLog -Level INFO -Message "·Î±×ÀÎ ½ÇÆĞ/Ãë¼Ò·Î Á¾·á"
         return
     }
 
@@ -4269,10 +4269,10 @@ function Main {
     Invoke-InitialSync
     $script:LastSyncTimeText = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
     $script:PollTimer.Start()
-    Write-AppLog -Level INFO -Message "í´ë§ íƒ€ì´ë¨¸ ì‹œì‘ interval=$($script:PollIntervalMs)ms"
-    Update-StatusStripInfo -Prefix ("ì¤€ë¹„ ì™„ë£Œ - " + $script:CurrentUserName)
+    Write-AppLog -Level INFO -Message "Æú¸µ Å¸ÀÌ¸Ó ½ÃÀÛ interval=$($script:PollIntervalMs)ms"
+    Update-StatusStripInfo -Prefix ("ÁØºñ ¿Ï·á - " + $script:CurrentUserName)
 
-    # ìˆ¨ê²¨ì§„ LifetimeFormìœ¼ë¡œ ë©”ì‹œì§€ ë£¨í”„ ìœ ì§€ (íŠ¸ë ˆì´ ìƒì£¼)
+    # ¼û°ÜÁø LifetimeFormÀ¸·Î ¸Ş½ÃÁö ·çÇÁ À¯Áö (Æ®·¹ÀÌ »óÁÖ)
     $life = New-Object System.Windows.Forms.Form
     $life.Text = 'InternalChatLifetime'
     $life.ShowInTaskbar = $false
@@ -4300,15 +4300,15 @@ function Main {
                 param($sender, $e)
                 try {
                     Write-AppLog -Level ERROR -Message ("UI ThreadException: " + $e.Exception.Message) -Exception $e.Exception
-                    Set-StatusSafe ("ì˜¤ë¥˜: " + $e.Exception.Message)
+                    Set-StatusSafe ("¿À·ù: " + $e.Exception.Message)
                 } catch { }
             })
         }
     } catch { }
 
-    Write-AppLog -Level INFO -Message "ë©”ì‹œì§€ ë£¨í”„ ì‹œì‘ (íŠ¸ë ˆì´ ìƒì£¼)"
+    Write-AppLog -Level INFO -Message "¸Ş½ÃÁö ·çÇÁ ½ÃÀÛ (Æ®·¹ÀÌ »óÁÖ)"
     [System.Windows.Forms.Application]::Run($script:AppContext)
-    Write-AppLog -Level INFO -Message "ë©”ì‹œì§€ ë£¨í”„ ì¢…ë£Œ"
+    Write-AppLog -Level INFO -Message "¸Ş½ÃÁö ·çÇÁ Á¾·á"
 
     if (-not $script:IsExiting) {
         $script:IsExiting = $true
@@ -4317,22 +4317,22 @@ function Main {
 }
 
 
-# ì‹¤í–‰
+# ½ÇÇà
 try {
     Main
 }
 catch {
-    try { Write-AppLog -Level ERROR -Message "ì¹˜ëª…ì  ì˜¤ë¥˜" -Exception $_.Exception } catch { }
+    try { Write-AppLog -Level ERROR -Message "Ä¡¸íÀû ¿À·ù" -Exception $_.Exception } catch { }
     try {
         [System.Windows.Forms.MessageBox]::Show(
-            "ì¹˜ëª…ì  ì˜¤ë¥˜ê°€ ë°œìƒí–ˆìŠµë‹ˆë‹¤.`n$($_.Exception.Message)",
+            "Ä¡¸íÀû ¿À·ù°¡ ¹ß»ıÇß½À´Ï´Ù.`n$($_.Exception.Message)",
             "InternalChat",
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Error
         ) | Out-Null
     }
     catch {
-        Write-Host "ì¹˜ëª…ì  ì˜¤ë¥˜: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Ä¡¸íÀû ¿À·ù: $($_.Exception.Message)" -ForegroundColor Red
     }
     exit 1
 }
